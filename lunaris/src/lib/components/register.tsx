@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Mail, Lock, User, UserPlus, EyeOff, ArrowLeft } from "lucide-react";
-
 import fundo from "../../assets/fundo.png";
+import { supabase } from "../supabase";
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -30,6 +30,30 @@ export default function Register() {
     console.log(form);
 
     // cadastrar usuário aqui
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: form.email,
+        password: form.senha,
+      });
+      if (error) throw error;
+
+      const user = data.user;
+
+      if (!user) throw new Error("Usuário não encontrado após cadastro.");
+
+      const { error: profileError } = await supabase.from("Usuario").insert({
+        id: user.id,
+        nome: form.nome,
+        username: form.username,
+        email: form.email,
+        tipo_acesso: "visitante",
+      });
+      if (profileError) throw profileError;
+
+      alert("Conta criada com sucesso");
+    } catch (error) {
+      alert(error.message);
+    }
   }
 
   return (

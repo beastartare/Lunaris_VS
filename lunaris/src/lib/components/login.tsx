@@ -10,9 +10,30 @@ import {
 
 import fundo from "../../assets/fundo.png";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { supabase } from "../supabase";
 
 export default function Login() {
   const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  async function HandleLogin(e) {
+    e.preventDefault();
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      alert(error.message);
+      return;
+    } else {
+      alert("Login bem-sucedido!");
+      navigate("/dashboard");
+    }
+  }
 
   return (
     <div
@@ -103,7 +124,7 @@ export default function Login() {
             </div>
 
             {/* Form */}
-            <form className="space-y-7">
+            <form className="space-y-7" onSubmit={HandleLogin}>
               {/* Email */}
               <div>
                 <label className="block text-sm tracking-widest text-pink-100/80 mb-3">
@@ -117,6 +138,8 @@ export default function Login() {
                     type="email"
                     placeholder="seu@email.com"
                     className="w-full bg-transparent outline-none text-pink-50 placeholder:text-pink-100/40"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
               </div>
@@ -134,6 +157,8 @@ export default function Login() {
                     type="password"
                     placeholder="Sua senha"
                     className="w-full bg-transparent outline-none text-pink-50 placeholder:text-pink-100/40"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                   />
 
                   <button
