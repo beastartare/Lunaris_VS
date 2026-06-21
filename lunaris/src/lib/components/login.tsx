@@ -21,7 +21,7 @@ export default function Login() {
   async function HandleLogin(e) {
     e.preventDefault();
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -29,10 +29,27 @@ export default function Login() {
     if (error) {
       alert(error.message);
       return;
-    } else {
-      alert("Login bem-sucedido!");
-      navigate("/dashboard");
     }
+
+    const userId = data.user.id;
+
+    const { data: profile, error: profileError } = await supabase
+      .from("usuario")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    if (profileError) {
+      alert(profileError.message);
+      return;
+    }
+
+    if (profile.tipo_acesso_usuario === 3) {
+      navigate("/admin");
+      return;
+    }
+
+    navigate("/client/layoult");
   }
 
   return (

@@ -41,14 +41,17 @@ export default function Register() {
 
       if (!user) throw new Error("Usuário não encontrado após cadastro.");
 
-      const { error: profileError } = await supabase.from("Usuario").insert({
+      const { error: profileError } = await supabase.from("usuario").insert({
         id: user.id,
         nome: form.nome,
         username: form.username,
         email: form.email,
-        tipo_acesso: "visitante",
+        tipo_acesso_usuario: 0,
       });
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error(profileError);
+        throw profileError;
+      }
 
       alert("Conta criada com sucesso");
     } catch (error) {
