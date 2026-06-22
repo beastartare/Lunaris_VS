@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../../lib/supabase";
+import {
+  Database,
+  BarChart3,
+  Sheet,
+  ChartNoAxesCombined,
+  Orbit
+} from "lucide-react";
+import fundo from "../../../assets/fundo.png";
 
 export default function Home() {
   const [bancoVazio, setBancoVazio] = useState(false);
@@ -94,37 +102,52 @@ export default function Home() {
 
       <div className="flex min-h-screen relative z-10">
         {/* Sidebar */}
-        <aside className="w-64 border-r border-white/10 bg-black/10 backdrop-blur-xl">
-          <div className="p-8">
-            <h1 className="text-3xl tracking-[0.4rem] font-light">
-              LUNARIS
-            </h1>
+        <aside className="relative w-[280px] overflow-hidden border-r border-white/10">
+          {/* Fundo */}
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url(${fundo})`,
+              backgroundSize: "100vw 100vh",
+              backgroundPosition: "left center",
+              backgroundRepeat: "no-repeat",
+            }}
+          />
+          <div className="absolute inset-0 bg-[#12051d]/70" />
+          <div className="relative z-10 flex flex-col h-full">
+            <div className="px-8 py-10">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full border border-pink-400/30 flex items-center justify-center">
+                  <Orbit size={22} className="text-pink-400" />
+                </div>
 
-            <p className="text-sm text-zinc-400 mt-2">
-              Administração
-            </p>
-          </div>
+                <div>
+                  <h1 className="text-2xl tracking-[0.35rem] font-light">
+                    LUNARIS
+                  </h1>
 
-          <nav className="px-4 space-y-3">
-            <button className="w-full text-left px-5 py-4 rounded-2xl bg-pink-500/20 border border-pink-400/30">
-              Banco de Dados
-            </button>
-
-            <button className="w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition">
-              Estatísticas
-            </button>
-          </nav>
-
-          <div className="absolute bottom-6 left-4 right-4">
-            <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
-              <p className="font-medium">
-                Administrador Chefe
-              </p>
-
-              <p className="text-sm text-zinc-400">
-                admin@lunaris.com
-              </p>
+                  <p className="text-xs text-zinc-500 uppercase tracking-widest">
+                    Painel Administrativo
+                  </p>
+                </div>
+              </div>
             </div>
+
+            {/* Menu */}
+            <nav className="px-4 flex-1">
+              <div className="space-y-2">
+
+                <button className="w-full flex items-center gap-4 px-5 py-4 rounded-xl bg-pink-500/20 border border-pink-400/20 text-pink-200">
+                  <Database size={20} />
+                  <span>Banco de Dados</span>
+                </button>
+
+                <button className="w-full flex items-center gap-4 px-5 py-4 rounded-xl text-zinc-300 hover:bg-white/5 transition">
+                  <ChartNoAxesCombined size={20} />
+                  <span>Estatísticas</span>
+                </button>
+              </div>
+            </nav>
           </div>
         </aside>
 
@@ -140,31 +163,92 @@ export default function Home() {
               Gerenciamento do sistema Lunaris
             </p>
           </div>
-
-          {/* Status */}
           <div className="grid md:grid-cols-3 gap-6 mb-10">
+            {/* Status */}
             <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6">
-                <p className="text-zinc-400">Status</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-zinc-400 text-sm mb-3">
+                    Status do Banco
+                  </p>
 
-                <h3 className="text-3xl mt-2 text-green-400">
-                  {stats.status}
-                </h3>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div
+                      className={`w-3 h-3 rounded-full ${
+                        stats.status === "Online"
+                          ? "bg-green-400"
+                          : "bg-red-400"
+                      }`}
+                    />
+
+                    <span
+                      className={`text-2xl font-medium ${
+                        stats.status === "Online"
+                          ? "text-green-400"
+                          : "text-red-400"
+                      }`}
+                    >
+                      {stats.status === "Online"
+                        ? "Conectado"
+                        : "Offline"}
+                    </span>
+                  </div>
+
+                  <p className="text-zinc-500 text-sm">
+                    PostgreSQL
+                  </p>
+                </div>
+
+                <div className="h-16 w-16 rounded-2xl bg-pink-500/10 border border-pink-400/20 flex items-center justify-center">
+                  <Database className="w-8 h-8 text-pink-400" />
+                </div>
               </div>
-
-            <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6">
-              <p className="text-zinc-400">Tabelas</p>
-
-              <h3 className="text-3xl mt-2">
-                {stats.tabelas}
-              </h3>
             </div>
 
+            {/* Tabelas */}
             <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6">
-              <p className="text-zinc-400">Registros</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-zinc-400 text-sm mb-3">
+                    Tabelas
+                  </p>
 
-              <h3 className="text-3xl mt-2">
-                {stats.registros.toLocaleString("pt-BR")}
-              </h3>
+                  <h3 className="text-4xl font-semibold">
+                    {stats.tabelas}
+                  </h3>
+
+                  <p className="text-zinc-500 text-sm mt-2">
+                    Tabelas no banco
+                  </p>
+                </div>
+
+                <div className="h-16 w-16 rounded-2xl bg-fuchsia-500/10 border border-fuchsia-400/20 flex items-center justify-center">
+                  <Sheet className="w-8 h-8 text-fuchsia-400" />
+                </div>
+              </div>
+            </div>
+
+            {/* Registros */}
+            <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-zinc-400 text-sm mb-3">
+                    Registros
+                  </p>
+
+                  <h3 className="text-4xl font-semibold">
+                    {stats.registros.toLocaleString("pt-BR")}
+                  </h3>
+
+                  <p className="text-zinc-500 text-sm mt-2">
+                    Registros totais
+                  </p>
+                </div>
+
+                <div className="h-16 w-16 rounded-2xl bg-cyan-500/10 border border-cyan-400/20 flex items-center justify-center">
+                  <BarChart3 className="w-8 h-8 text-cyan-400" />
+                </div>
+              </div>
             </div>
           </div>
 
