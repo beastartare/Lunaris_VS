@@ -5,9 +5,11 @@ import {
   BarChart3,
   Sheet,
   ChartNoAxesCombined,
-  Orbit
+  Orbit,
+  LogOut,
 } from "lucide-react";
 import fundo from "../../../assets/fundo.png";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
   const [bancoVazio, setBancoVazio] = useState(false);
@@ -17,6 +19,7 @@ export default function Home() {
     tabelas: 0,
     registros: 0,
   });
+  const navigate = useNavigate();
 
   useEffect(() => {
     carregarEstatisticas();
@@ -94,6 +97,11 @@ export default function Home() {
     }
   }
 
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    navigate("/");
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#18051f] via-[#2a0d3d] to-[#14031d] text-white overflow-hidden">
       {/* Glow Effects */}
@@ -148,6 +156,16 @@ export default function Home() {
                 </button>
               </div>
             </nav>
+            {/* Logout */}
+            <div className="px-4 pb-6 mt-auto">
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-4 px-5 py-4 rounded-xl text-red-300 hover:bg-red-500/10 transition border border-red-400/10"
+              >
+                <LogOut size={20} />
+                <span>Sair</span>
+              </button>
+            </div>
           </div>
         </aside>
 
