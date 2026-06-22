@@ -150,7 +150,9 @@ export default function Home() {
                   <span>Banco de Dados</span>
                 </button>
 
-                <button className="w-full flex items-center gap-4 px-5 py-4 rounded-xl text-zinc-300 hover:bg-white/5 transition">
+                <button onClick={() => navigate("/admin/statistics")}
+                        className="w-full flex items-center gap-4 px-5 py-4 rounded-xl text-zinc-300 hover:bg-white/5 transition"
+                >
                   <ChartNoAxesCombined size={20} />
                   <span>Estatísticas</span>
                 </button>
