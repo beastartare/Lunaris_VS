@@ -67,12 +67,22 @@ export default function Home() {
   }
 
   async function carregarEstatisticas() {
-    const { data, error } = await supabase.rpc(
-      "obter_estatisticas_banco"
-    );
+    try {
+      const { data, error } = await supabase.rpc(
+        "obter_estatisticas_banco"
+      );
 
-    if (!error && data) {
+      if (error) throw error;
+
       setStats(data);
+    } catch (err) {
+      console.error(err);
+
+      setStats({
+        status: "Offline",
+        tabelas: 0,
+        registros: 0,
+      });
     }
   }
 
