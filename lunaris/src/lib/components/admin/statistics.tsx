@@ -17,7 +17,8 @@ import {
   BarChart,
   Bar,
   XAxis,
-  YAxis
+  YAxis,
+  Legend
 } from "recharts";
 
 export default function Statistics() {
@@ -107,8 +108,8 @@ async function carregarMateriaisFavoritos() {
 });
 
 const [eventosCategoria, setEventosCategoria] = useState([
-  { categoria: "Astronômicos", quantidade: 0 },
-  { categoria: "Meteorológicos", quantidade: 0 },
+  { categoria: "Astronômico", Quantidade: 0 },
+  { categoria: "Meteorológico", Quantidade: 0 },
 ]);
 
 async function carregarEventosCategoria() {
@@ -127,12 +128,12 @@ async function carregarEventosCategoria() {
 
   setEventosCategoria([
     {
-      categoria: "Astronômicos",
-      quantidade: astronomicosResult.count || 0,
+      categoria: "Astronômico",
+      Quantidade: astronomicosResult.count || 0,
     },
     {
-      categoria: "Meteorológicos",
-      quantidade: meteorologicosResult.count || 0,
+      categoria: "Meteorológico",
+      Quantidade: meteorologicosResult.count || 0,
     },
   ]);
 }
@@ -199,8 +200,8 @@ async function carregarUsuariosPorTipo() {
 
   setUsuariosPorTipo([
     { name: "Comum", value: comuns },
-    { name: "Astronômico", value: astronomicos },
-    { name: "Meteorológico", value: meteorologicos },
+    { name: "Pesquisador Astronômico", value: astronomicos },
+    { name: "Pesquisador Meteorológico", value: meteorologicos },
   ]);
 }
 useEffect(() => {
@@ -267,28 +268,28 @@ useEffect(() => {
                 </button>
               </div>
             </nav>
-            {/* Logout */}
-            <div className="px-4 pb-6 mt-auto">
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-4 px-5 py-4 rounded-xl text-red-300 hover:bg-red-500/10 transition border border-red-400/10"
-              >
-                <LogOut size={20} />
-                <span>Sair</span>
-              </button>
-            </div>
           </div>
         </aside>
         <main className="flex-1 p-10 overflow-auto">
-            <div className="mb-10">
-                <h2 className="text-4xl font-light tracking-wide">
+          <div className="flex items-start justify-between mb-10">
+            <div>
+              <h2 className="text-4xl font-light tracking-wide">
                 Estatísticas Gerais
-                </h2>
+              </h2>
 
-                <p className="text-zinc-400 mt-2">
+              <p className="text-zinc-400 mt-2">
                 Visão geral da atividade da plataforma.
-                </p>
+              </p>
             </div>
+
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 px-5 py-3 rounded-xl text-red-300 hover:bg-red-500/10 transition border border-red-400/10"
+            >
+              <LogOut size={20} />
+              <span>Sair</span>
+            </button>
+          </div>
 
             {/* Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-10">
@@ -353,7 +354,18 @@ useEffect(() => {
                             width={120}
                             />
 
-                            <Tooltip cursor={false} />
+                            <Tooltip contentStyle={{
+                              backgroundColor: "#1f1129",
+                              border: "1px solid rgba(255,255,255,0.1)",
+                              borderRadius: "12px",
+                              color: "white",
+                            }}
+                            labelStyle={{
+                              color: "#d4d4d8",
+                            }}
+                            itemStyle={{
+                              color: "#ec4899",
+                            }}/>
 
                             <Bar
                             dataKey="favoritos"
@@ -390,7 +402,18 @@ useEffect(() => {
                             width={120}
                             />
 
-                            <Tooltip cursor={false} />
+                            <Tooltip contentStyle={{
+                              backgroundColor: "#1f1129",
+                              border: "1px solid rgba(255,255,255,0.1)",
+                              borderRadius: "12px",
+                              color: "white",
+                            }}
+                            labelStyle={{
+                              color: "#d4d4d8",
+                            }}
+                            itemStyle={{
+                              color: "#ec4899",
+                            }}/>
 
                             <Bar
                             dataKey="favoritos"
@@ -423,29 +446,29 @@ useEffect(() => {
                             outerRadius={100}
                             label
                         >
+                          <Legend></Legend>
                             <Cell fill="#ec4899" />
                             <Cell fill="#a855f7" />
                             <Cell fill="#6366f1" />
                         </Pie>
 
-                        <Tooltip />
+                        <Tooltip contentStyle={{
+                            backgroundColor: "#1f1129",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                            borderRadius: "12px",
+                            color: "white",
+                          }}
+                          labelStyle={{
+                            color: "#d4d4d8",
+                          }}
+                          itemStyle={{
+                            color: "#ec4899",
+                          }}/>
                         </PieChart>
                     </ResponsiveContainer>
                     </div>
                 </div>
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                    <h3 className="text-xl mb-6">
-                        Crescimento dos Eventos
-                    </h3>
-
-                    <div className="h-[320px] flex items-center justify-center text-zinc-500">
-                        Gráfico de Linha
-                    </div>
-                </div>
-            </div>
-
-            { /* Gráfico eventos */ }
-            <div className="grid xl:grid-cols-2 gap-6 mb-10">
+                { /* Gráfico eventos */ }
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
                 <h3 className="text-xl mb-6">
                     Eventos por Categoria
@@ -454,52 +477,31 @@ useEffect(() => {
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={eventosCategoria}>
                         <XAxis dataKey="categoria" />
-                        <YAxis />
-                        <Tooltip   cursor={false}/>
+                        <YAxis allowDecimals={false} domain={[0, 'dataMax']}/>
+                        <Tooltip cursor={false} isAnimationActive={false}
+                          contentStyle={{
+                            backgroundColor: "#1f1129",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                            borderRadius: "12px",
+                            color: "white",
+                          }}
+                          labelStyle={{
+                            color: "#d4d4d8",
+                          }}
+                          itemStyle={{
+                            color: "#ec4899",
+                          }}
+                        />
                         <Bar
-                            dataKey="quantidade"
-                            radius={[8, 8, 0, 0]}                        >
+                            dataKey="Quantidade"
+                            radius={[8, 8, 0, 0]}>
                             <Cell fill="#a855f7" />
                             <Cell fill="#6366f1"/>
+                            isAnimationActive={false}
                          </Bar>
                         </BarChart>
                     </ResponsiveContainer>
                     </div>
-                </div>
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                    <h3 className="text-xl mb-6">
-                        Top Pesquisadores
-                    </h3>
-
-                    <table className="w-full">
-                        <thead>
-                        <tr className="text-left text-zinc-400 border-b border-white/10">
-                            <th className="pb-3">Nome</th>
-                            <th className="pb-3">Tipo</th>
-                            <th className="pb-3 text-right">Eventos</th>
-                        </tr>
-                        </thead>
-
-                        <tbody>
-                        <tr className="border-b border-white/5">
-                            <td className="py-3">João</td>
-                            <td>Astronômico</td>
-                            <td className="text-right">84</td>
-                        </tr>
-
-                        <tr className="border-b border-white/5">
-                            <td className="py-3">Maria</td>
-                            <td>Meteorológico</td>
-                            <td className="text-right">72</td>
-                        </tr>
-
-                        <tr>
-                            <td className="py-3">Pedro</td>
-                            <td>Astronômico</td>
-                            <td className="text-right">65</td>
-                        </tr>
-                        </tbody>
-                    </table>
                 </div>
             </div>
             </main>

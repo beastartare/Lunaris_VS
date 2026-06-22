@@ -158,31 +158,31 @@ export default function Home() {
                 </button>
               </div>
             </nav>
-            {/* Logout */}
-            <div className="px-4 pb-6 mt-auto">
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-4 px-5 py-4 rounded-xl text-red-300 hover:bg-red-500/10 transition border border-red-400/10"
-              >
-                <LogOut size={20} />
-                <span>Sair</span>
-              </button>
-            </div>
           </div>
         </aside>
 
         {/* Conteúdo */}
         <main className="flex-1 p-12">
           {/* Header */}
-          <div className="mb-10">
-            <h2 className="text-5xl font-semibold">
-              Banco de Dados
-            </h2>
+          <div className="flex items-start justify-between mb-10">
+            <div>
+              <h2 className="text-5xl font-semibold">
+                Banco de Dados
+              </h2>
 
-            <p className="text-zinc-400 mt-3 text-lg">
-              Gerenciamento do sistema Lunaris
-            </p>
+              <p className="text-zinc-400 mt-3 text-lg">
+                Gerenciamento do sistema Lunaris
+              </p>
+            </div>
+              <button
+              onClick={handleLogout}
+                className="flex items-center gap-3 px-5 py-3 rounded-xl text-red-300 hover:bg-red-500/10 transition border border-red-400/10"
+              >
+                <LogOut size={20} />
+                <span>Sair</span>
+              </button>
           </div>
+
           <div className="grid md:grid-cols-3 gap-6 mb-10">
             {/* Status */}
             <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6">
