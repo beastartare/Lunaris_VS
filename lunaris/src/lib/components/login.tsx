@@ -31,12 +31,12 @@ export default function Login() {
       return;
     }
 
-    const userId = data.user.id;
+    const userEmail = data.user.email;
 
     const { data: profile, error: profileError } = await supabase
       .from("usuario")
       .select("*")
-      .eq("id", userId)
+      .eq("email", userEmail)
       .single();
 
     if (profileError) {
