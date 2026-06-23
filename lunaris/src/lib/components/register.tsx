@@ -41,13 +41,36 @@ export default function Register() {
 
       if (!user) throw new Error("Usuário não encontrado após cadastro.");
 
-      const { error: profileError } = await supabase.from("usuario").insert({
-        id: user.id,
-        nome: form.nome,
-        username: form.username,
-        email: form.email,
-        tipo_acesso_usuario: 0,
-      });
+      // Busca o maior id existente
+      const { data: ultimoUsuario, error: ultimoErro } = await supabase
+        .from("usuario")
+        .select("idusuario")
+        .order("idusuario", { ascending: false })
+        .limit(1);
+
+      if (ultimoErro) throw ultimoErro;
+
+      // Define o próximo ID
+      const novoId =
+        ultimoUsuario && ultimoUsuario.length > 0
+          ? ultimoUsuario[0].idusuario + 1
+          : 1;
+
+      // Insere o usuário
+      const { error: profileError } = await supabase
+        .from("usuario")
+        .insert({
+          idusuario: novoId,
+          nome: form.nome,
+          username: form.username,
+          email: form.email,
+          tipo_acesso_usuario: 0,
+        });
+
+      if (profileError) {
+        console.error(profileError);
+        throw profileError;
+      }
       if (profileError) {
         console.error(profileError);
         throw profileError;
