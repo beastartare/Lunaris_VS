@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import fundo from "../../../assets/fundo.png";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+
 import {
   PieChart,
   Pie,
@@ -18,199 +18,50 @@ import {
   Bar,
   XAxis,
   YAxis,
-  Legend
+  Legend,
 } from "recharts";
+
+import { useStatistics } from "./statistics/useStatistics";
 
 export default function Statistics() {
   const navigate = useNavigate();
-  const [constelacoesFavoritas, setConstelacoesFavoritas] = useState([]);
-const [materiaisFavoritos, setMateriaisFavoritos] = useState([]);
-  async function carregarConstelacoesFavoritas() {
-  const { data, error } = await supabase
-    .from("favoritoconstelacaousuario")
-    .select(`
-      idUsuario,
-      constelacao:idConstelacao (
-        idConstelacao,
-        nome
-      )
-    `);
 
-  if (error) {
-    console.error(error);
-    return;
-  }
+  const {
+    stats,
+    usuariosPorTipo,
+    eventosCategoria,
+    constelacoesFavoritas,
+    materiaisFavoritos,
+    loading,
+  } = useStatistics();
 
-  const contador = {};
-
-  data.forEach((item) => {
-    const nome = item.constelacao.nome;
-
-    contador[nome] = (contador[nome] || 0) + 1;
-  });
-
-  const ranking = Object.entries(contador)
-    .map(([nome, favoritos]) => ({
-      nome,
-      favoritos,
-    }))
-    .sort((a, b) => b.favoritos - a.favoritos)
-    .slice(0, 5);
-
-  setConstelacoesFavoritas(ranking);
-}
-
-async function carregarMateriaisFavoritos() {
-  const { data, error } = await supabase
-    .from("favoritomaterialusuario")
-    .select(`
-      idUsuario,
-      material:idMaterialEstudo (
-        idMaterialEstudo,
-        titulo
-      )
-    `);
-
-  if (error) {
-    console.error(error);
-    return;
-  }
-
-  const contador: Record<string, number> = {};
-
-  data.forEach((item: any) => {
-    const titulo = item.material?.titulo;
-
-    if (!titulo) return;
-
-    contador[titulo] = (contador[titulo] || 0) + 1;
-  });
-
-  const ranking = Object.entries(contador)
-    .map(([titulo, favoritos]) => ({
-      titulo,
-      favoritos,
-    }))
-    .sort((a, b) => Number(b.favoritos) - Number(a.favoritos))
-    .slice(0, 5);
-
-  setMateriaisFavoritos(ranking);
-}
   async function handleLogout() {
     await supabase.auth.signOut();
     navigate("/");
   }
-  const [stats, setStats] = useState({
-  usuarios: 0,
-  eventos: 0,
-  corposCelestes: 0,
-  missoes: 0,
-});
 
-const [eventosCategoria, setEventosCategoria] = useState([
-  { categoria: "Astronômico", Quantidade: 0 },
-  { categoria: "Meteorológico", Quantidade: 0 },
-]);
-
-async function carregarEventosCategoria() {
-  const [
-    astronomicosResult,
-    meteorologicosResult,
-  ] = await Promise.all([
-    supabase
-      .from("eventoastronomico")
-      .select("*", { count: "exact", head: true }),
-
-    supabase
-      .from("eventometereologico")
-      .select("*", { count: "exact", head: true }),
-  ]);
-
-  setEventosCategoria([
-    {
-      categoria: "Astronômico",
-      Quantidade: astronomicosResult.count || 0,
+  const tooltipProps = {
+    contentStyle: {
+      backgroundColor: "#1f1129",
+      border: "1px solid rgba(255,255,255,0.1)",
+      borderRadius: "12px",
+      color: "white",
     },
-    {
-      categoria: "Meteorológico",
-      Quantidade: meteorologicosResult.count || 0,
+    labelStyle: {
+      color: "#d4d4d8",
     },
-  ]);
-}
+    itemStyle: {
+      color: "#ec4899",
+    },
+  };
 
-const [usuariosPorTipo, setUsuariosPorTipo] = useState([]);
-
-async function carregarEstatisticas() {
-  try {
-    const [
-      usuariosResult,
-      eventosResult,
-      corposResult,
-      missoesResult,
-    ] = await Promise.all([
-      supabase
-        .from("usuario")
-        .select("*", { count: "exact", head: true }),
-
-      supabase
-        .from("evento")
-        .select("*", { count: "exact", head: true }),
-
-      supabase
-        .from("corpoceleste")
-        .select("*", { count: "exact", head: true }),
-
-      supabase
-        .from("missaoespacial")
-        .select("*", { count: "exact", head: true }),
-    ]);
-
-    setStats({
-      usuarios: usuariosResult.count || 0,
-      eventos: eventosResult.count || 0,
-      corposCelestes: corposResult.count || 0,
-      missoes: missoesResult.count || 0,
-    });
-  } catch (err) {
-    console.error(err);
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#14031d] text-white">
+        Carregando estatísticas...
+      </div>
+    );
   }
-}
-
-async function carregarUsuariosPorTipo() {
-  const { data, error } = await supabase
-    .from("usuario")
-    .select("tipo_acesso_usuario");
-
-  if (error) {
-    console.error(error);
-    return;
-  }
-
-  const comuns = data.filter(
-    (u) => u.tipo_acesso_usuario === 0
-  ).length;
-
-  const astronomicos = data.filter(
-    (u) => u.tipo_acesso_usuario === 1
-  ).length;
-
-  const meteorologicos = data.filter(
-    (u) => u.tipo_acesso_usuario === 2
-  ).length;
-
-  setUsuariosPorTipo([
-    { name: "Comum", value: comuns },
-    { name: "Pesquisador Astronômico", value: astronomicos },
-    { name: "Pesquisador Meteorológico", value: meteorologicos },
-  ]);
-}
-useEffect(() => {
-  carregarEstatisticas();
-  carregarUsuariosPorTipo();
-  carregarEventosCategoria();
-  carregarConstelacoesFavoritas();
-  carregarMateriaisFavoritos();
-}, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#18051f] via-[#2a0d3d] to-[#14031d] text-white overflow-hidden">
@@ -354,24 +205,18 @@ useEffect(() => {
                             width={120}
                             />
 
-                            <Tooltip contentStyle={{
-                              backgroundColor: "#1f1129",
-                              border: "1px solid rgba(255,255,255,0.1)",
-                              borderRadius: "12px",
-                              color: "white",
-                            }}
-                            labelStyle={{
-                              color: "#d4d4d8",
-                            }}
-                            itemStyle={{
-                              color: "#ec4899",
-                            }}/>
+                            <Tooltip
+                              {...tooltipProps}
+                              cursor={false}
+                              isAnimationActive={false}
+                            />
 
                             <Bar
                             dataKey="favoritos"
                             fill="#ec4899"
                             radius={[0, 8, 8, 0]}
                             activeBar={false}
+                            isAnimationActive={false}
                             />
                         </BarChart>
                         </ResponsiveContainer>
@@ -395,31 +240,23 @@ useEffect(() => {
                             data={materiaisFavoritos}
                         >
                             <XAxis type="number" hide />
-
-                            <YAxis
-                            dataKey="nome"
+                            <YAxis allowDecimals={false} domain={[0, 'dataMax']}
+                            dataKey="titulo"
                             type="category"
                             width={120}
                             />
-
-                            <Tooltip contentStyle={{
-                              backgroundColor: "#1f1129",
-                              border: "1px solid rgba(255,255,255,0.1)",
-                              borderRadius: "12px",
-                              color: "white",
-                            }}
-                            labelStyle={{
-                              color: "#d4d4d8",
-                            }}
-                            itemStyle={{
-                              color: "#ec4899",
-                            }}/>
+                            <Tooltip
+                              {...tooltipProps}
+                              cursor={false}
+                              isAnimationActive={false}
+                            />
 
                             <Bar
                             dataKey="favoritos"
                             fill="#ec4899"
                             radius={[0, 8, 8, 0]}
                             activeBar={false}
+                            isAnimationActive={false}
                             />
                         </BarChart>
                         </ResponsiveContainer>
@@ -452,18 +289,11 @@ useEffect(() => {
                             <Cell fill="#6366f1" />
                         </Pie>
 
-                        <Tooltip contentStyle={{
-                            backgroundColor: "#1f1129",
-                            border: "1px solid rgba(255,255,255,0.1)",
-                            borderRadius: "12px",
-                            color: "white",
-                          }}
-                          labelStyle={{
-                            color: "#d4d4d8",
-                          }}
-                          itemStyle={{
-                            color: "#ec4899",
-                          }}/>
+                        <Tooltip
+                          {...tooltipProps}
+                          cursor={false}
+                          isAnimationActive={false}
+                        />
                         </PieChart>
                     </ResponsiveContainer>
                     </div>
@@ -478,19 +308,10 @@ useEffect(() => {
                         <BarChart data={eventosCategoria}>
                         <XAxis dataKey="categoria" />
                         <YAxis allowDecimals={false} domain={[0, 'dataMax']}/>
-                        <Tooltip cursor={false} isAnimationActive={false}
-                          contentStyle={{
-                            backgroundColor: "#1f1129",
-                            border: "1px solid rgba(255,255,255,0.1)",
-                            borderRadius: "12px",
-                            color: "white",
-                          }}
-                          labelStyle={{
-                            color: "#d4d4d8",
-                          }}
-                          itemStyle={{
-                            color: "#ec4899",
-                          }}
+                        <Tooltip
+                          {...tooltipProps}
+                          cursor={false}
+                          isAnimationActive={false}
                         />
                         <Bar
                             dataKey="Quantidade"
