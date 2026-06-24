@@ -48,8 +48,12 @@ export default function Login() {
       navigate("/admin");
       return;
     }
+    if (profile.tipo_acesso_usuario === 0) {
+      navigate("/client/layoult");
+      return;
+    }
 
-    navigate("/client/layoult");
+    navigate("/pesquisador/layoult");
   }
 
   return (

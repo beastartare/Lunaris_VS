@@ -1,32 +1,21 @@
-import {
-  LayoutDashboard,
-  Telescope,
-  Orbit,
-  Rocket,
-  BookOpen,
-  Star,
-} from "lucide-react";
+import { LayoutDashboard, Pencil, BookOpen } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import LunaChat from "./LunaChat";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/client/dashboard" },
-  { icon: Telescope, label: "Observações", path: "/client/observacoes" },
-  { icon: Orbit, label: "Corpos Celestes", path: "/client/corpos-celestes" },
-  { icon: Rocket, label: "Missões", path: "/client/missoes" },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/pesquisador/dashboard" },
+  { icon: Pencil, label: "Cadastro", path: "/pesquisador/cadastro" },
   {
     icon: BookOpen,
-    label: "Material de Estudos",
-    path: "/client/material-estudos",
+    label: "Minha Biblioteca",
+    path: "/pesquisador/minha-biblioteca",
   },
-  { icon: Star, label: "Favoritos", path: "/client/favoritos" },
 ];
 
-export default function Layout({ children }: LayoutProps) {
+export default function Pesquisador({ children }: LayoutProps) {
   return (
     <div className="flex h-screen bg-[#2a102f] text-white">
       {/* Sidebar */}
@@ -58,15 +47,14 @@ export default function Layout({ children }: LayoutProps) {
 
         <div className="p-4">
           <div className="rounded-2xl border border-fuchsia-500/10 bg-white/5 p-4">
-            <p className="font-medium">Visitante</p>
-            <p className="text-sm text-zinc-400">Explorador do cosmos</p>
+            <p className="font-medium">Pesquisador</p>
+            <p className="text-sm text-zinc-400">Tipo</p>
           </div>
         </div>
       </aside>
 
       {/* Conteúdo */}
       <main className="flex-1 overflow-auto p-8">{children}</main>
-      <LunaChat />
     </div>
   );
 }
