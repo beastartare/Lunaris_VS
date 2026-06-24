@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "../../supabase";
 
-interface MaterialEstudo {
+interface MaterialEstudoItem {
   idmaterialestudo: number;
   idusuario: number | null;
   data_lancamento: string | null;
@@ -13,7 +13,7 @@ interface MaterialEstudo {
 }
 
 export default function MaterialEstudo() {
-  const [materiais, setMateriais] = useState<MaterialEstudo[]>([]);
+  const [materiais, setMateriais] = useState<MaterialEstudoItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [pesquisa, setPesquisa] = useState("");
@@ -22,11 +22,11 @@ export default function MaterialEstudo() {
 
   const registrosPorPagina = 6;
 
-  const buscarMateriais = async () => {
+  const buscarMateriais = useCallback(async () => {
     try {
       setLoading(true);
 
-      let query = supabase
+      const query = supabase
         .from("materialestudo")
         .select("*")
         .order("data_lancamento", {
@@ -56,43 +56,89 @@ export default function MaterialEstudo() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pesquisa]);
 
   useEffect(() => {
     Promise.resolve().then(() => {
       buscarMateriais();
     });
-  }, []);
+  }, [buscarMateriais]);
 
   const materiaisVisiveis = materiais.slice(0, pagina * registrosPorPagina);
 
-  const baixarArquivo = (arquivoHex: string, nomeArquivo: string) => {
+  const getMimeType = (tipo?: string | null) => {
+    if (!tipo) return "application/octet-stream";
+
+    const t = tipo.toLowerCase();
+
+    if (t.includes("/")) return t; // already a mime type
+
+    if (t.includes("pdf")) return "application/pdf";
+    if (t.includes("png")) return "image/png";
+    if (t.includes("jpg") || t.includes("jpeg")) return "image/jpeg";
+    if (t.includes("gif")) return "image/gif";
+    if (t.includes("txt")) return "text/plain";
+    if (t.includes("mp4")) return "video/mp4";
+
+    return "application/octet-stream";
+  };
+
+  const baixarArquivo = (
+    arquivoHex: string,
+    nomeArquivo: string,
+    tipoArquivo?: string | null,
+  ) => {
     if (!arquivoHex) return;
 
     const cleanHex = arquivoHex.startsWith("\\x")
       ? arquivoHex.slice(2)
       : arquivoHex;
 
-    const bytes = new Uint8Array(
-      cleanHex.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16)),
-    );
+    const hexPairs = cleanHex.match(/.{1,2}/g) || [];
 
-    const blob = new Blob([bytes]);
+    const bytes = new Uint8Array(hexPairs.map((byte) => parseInt(byte, 16)));
+
+    const mime = getMimeType(tipoArquivo);
+
+    const blob = new Blob([bytes], { type: mime });
 
     const url = URL.createObjectURL(blob);
 
-    const link = document.createElement("a");
+    const filename = nomeArquivo.includes(".")
+      ? nomeArquivo
+      : `${nomeArquivo}.${(tipoArquivo || "bin").replace(/\./g, "")}`;
 
-    link.href = url;
-    link.download = nomeArquivo;
+    // For PDFs and images, open in new tab to allow preview; otherwise trigger download
+    // If the app is being served from file:, force download to avoid cross-origin PDF viewer issues
+    const isFileProtocol =
+      window.location && window.location.protocol === "file:";
 
-    document.body.appendChild(link);
+    if (
+      !isFileProtocol &&
+      (mime === "application/pdf" || mime.startsWith("image/"))
+    ) {
+      const newWindow = window.open(url, "_blank");
 
-    link.click();
+      if (!newWindow) {
+        // Fallback to force download if popup blocked
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } else {
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
 
-    document.body.removeChild(link);
-
-    URL.revokeObjectURL(url);
+    // Keep the URL alive briefly to ensure the browser can access it
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   return (
