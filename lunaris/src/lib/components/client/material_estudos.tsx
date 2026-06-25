@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "../../supabase";
+import { Star } from "lucide-react";
 
 interface MaterialEstudoItem {
   idmaterialestudo: number;
@@ -15,6 +16,7 @@ interface MaterialEstudoItem {
 export default function MaterialEstudo() {
   const [materiais, setMateriais] = useState<MaterialEstudoItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [favoritos, setFavoritos] = useState<Record<number, boolean>>({});
 
   const [pesquisa, setPesquisa] = useState("");
 
@@ -64,6 +66,96 @@ export default function MaterialEstudo() {
     });
   }, [buscarMateriais]);
 
+  useEffect(() => {
+    const carregarFavoritos = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) return;
+
+        const { data: usuario } = await supabase
+          .from("usuario")
+          .select("idusuario")
+          .eq("id", user.id)
+          .single();
+
+        if (!usuario) return;
+
+        const { data: favoritosBanco } = await supabase
+          .from("favoritomaterialusuario")
+          .select("idmaterialestudo")
+          .eq("idusuario", usuario.idusuario);
+
+        const favoritosMap: Record<number, boolean> = {};
+
+        favoritosBanco?.forEach((favorito) => {
+          favoritosMap[favorito.idmaterialestudo] = true;
+        });
+
+        setFavoritos(favoritosMap);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    carregarFavoritos();
+  }, []);
+
+  const toggleFavorito = async (idmaterialestudo: number) => {
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        console.error("Usuário não autenticado");
+        return;
+      }
+
+      const { data: usuario, error: usuarioError } = await supabase
+        .from("usuario")
+        .select("idusuario")
+        .eq("id", user.id)
+        .single();
+
+      if (usuarioError || !usuario) {
+        console.error("Usuário não encontrado na tabela usuario");
+        return;
+      }
+
+      const favoritoAtual = favoritos[idmaterialestudo];
+
+      if (favoritoAtual) {
+        const { error } = await supabase
+          .from("favoritomaterialusuario")
+          .delete()
+          .eq("idmaterialestudo", idmaterialestudo)
+          .eq("idusuario", usuario.idusuario);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("favoritomaterialusuario")
+          .insert({
+            idmaterialestudo,
+            idusuario: usuario.idusuario,
+          });
+
+        if (error) throw error;
+      }
+
+      setFavoritos((prev) => ({
+        ...prev,
+        [idmaterialestudo]: !prev[idmaterialestudo],
+      }));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const materiaisVisiveis = materiais.slice(0, pagina * registrosPorPagina);
 
   const getMimeType = (tipo?: string | null) => {
@@ -90,55 +182,53 @@ export default function MaterialEstudo() {
   ) => {
     if (!arquivoHex) return;
 
+    // bytea(hex) -> string base64
     const cleanHex = arquivoHex.startsWith("\\x")
       ? arquivoHex.slice(2)
       : arquivoHex;
 
-    const hexPairs = cleanHex.match(/.{1,2}/g) || [];
+    let base64 = "";
 
-    const bytes = new Uint8Array(hexPairs.map((byte) => parseInt(byte, 16)));
+    for (let i = 0; i < cleanHex.length; i += 2) {
+      base64 += String.fromCharCode(
+        parseInt(cleanHex.substring(i, i + 2), 16)
+      );
+    }
+
+    // base64 -> bytes reais
+    const binary = atob(base64);
+
+    const bytes = new Uint8Array(binary.length);
+
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
 
     const mime = getMimeType(tipoArquivo);
 
-    const blob = new Blob([bytes], { type: mime });
+    const blob = new Blob([bytes], {
+      type: mime,
+    });
 
     const url = URL.createObjectURL(blob);
 
-    const filename = nomeArquivo.includes(".")
-      ? nomeArquivo
-      : `${nomeArquivo}.${(tipoArquivo || "bin").replace(/\./g, "")}`;
+    const extensao =
+      tipoArquivo?.replace(".", "") || "pdf";
 
-    // For PDFs and images, open in new tab to allow preview; otherwise trigger download
-    // If the app is being served from file:, force download to avoid cross-origin PDF viewer issues
-    const isFileProtocol =
-      window.location && window.location.protocol === "file:";
+    const link = document.createElement("a");
 
-    if (
-      !isFileProtocol &&
-      (mime === "application/pdf" || mime.startsWith("image/"))
-    ) {
-      const newWindow = window.open(url, "_blank");
+    link.href = url;
+    link.download = `${nomeArquivo}.${extensao}`;
 
-      if (!newWindow) {
-        // Fallback to force download if popup blocked
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-    } else {
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+    document.body.appendChild(link);
 
-    // Keep the URL alive briefly to ensure the browser can access it
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    link.click();
+
+    document.body.removeChild(link);
+
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 1000);
   };
 
   return (
@@ -184,8 +274,22 @@ export default function MaterialEstudo() {
             {materiaisVisiveis.map((material) => (
               <div
                 key={material.idmaterialestudo}
-                className="rounded-2xl border border-purple-700 bg-[#3b1544] p-6"
+                className="relative rounded-2xl border border-purple-700 bg-[#3b1544] p-6"
               >
+                <button
+                  onClick={() => toggleFavorito(material.idmaterialestudo)}
+                  aria-label="Favoritar"
+                  className="absolute right-4 top-4 rounded-full p-2 hover:bg-white/10"
+                >
+                  <Star
+                    size={18}
+                    className={
+                      favoritos[material.idmaterialestudo]
+                        ? "fill-pink-500 text-pink-500"
+                        : "text-gray-400"
+                    }
+                  />
+                </button>
                 <div className="mb-4">
                   <span className="rounded-lg bg-purple-700 px-3 py-1 text-xs">
                     {material.tipo_arquivo || "Arquivo"}
@@ -203,8 +307,8 @@ export default function MaterialEstudo() {
                     Publicado em:{" "}
                     {material.data_lancamento
                       ? new Date(material.data_lancamento).toLocaleDateString(
-                          "pt-BR",
-                        )
+                        "pt-BR",
+                      )
                       : "-"}
                   </p>
                 </div>
@@ -214,7 +318,8 @@ export default function MaterialEstudo() {
                     onClick={() =>
                       baixarArquivo(
                         material.arquivo!,
-                        `${material.titulo}.${material.tipo_arquivo}`,
+                        material.titulo || "arquivo",
+                        material.tipo_arquivo
                       )
                     }
                     className="mt-6 w-full rounded-xl bg-fuchsia-700 px-4 py-3 font-semibold hover:bg-fuchsia-600"

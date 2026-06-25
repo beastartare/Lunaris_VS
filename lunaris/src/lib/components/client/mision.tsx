@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../supabase";
+import { Star } from "lucide-react";
 
 interface Missao {
   idmissaoespacial: number;
@@ -9,6 +10,11 @@ interface Missao {
   descricao: string;
   agencia: string;
   datalancamento: string;
+  missaocorpoceleste?: {
+    corpoceleste: {
+      nome: string;
+    } | null;
+  }[];
 }
 
 const STATUS_OPTIONS = [
@@ -31,6 +37,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default function Missoes() {
   const [missoes, setMissoes] = useState<Missao[]>([]);
   const [loading, setLoading] = useState(true);
+  const [favoritos, setFavoritos] = useState<Record<number, boolean>>({});
 
   const [pesquisa, setPesquisa] = useState("");
   const [statusFiltro, setStatusFiltro] = useState("Todos");
@@ -45,7 +52,14 @@ export default function Missoes() {
 
       let query = supabase
         .from("missaoespacial")
-        .select("*")
+        .select(`
+          *,
+          missaocorpoceleste (
+            corpoceleste (
+              nome
+            )
+          )
+        `)
         .order("datalancamento", { ascending: false });
 
       if (pesquisa.trim()) {
@@ -81,6 +95,93 @@ export default function Missoes() {
       mounted = false;
     };
   }, []);
+  useEffect(() => {
+    const carregarFavoritos = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) return;
+
+        const { data: usuario } = await supabase
+          .from("usuario")
+          .select("idusuario")
+          .eq("id", user.id)
+          .single();
+
+        if (!usuario) return;
+
+        const { data: favoritosBanco } = await supabase
+          .from("favoritousuariomissao")
+          .select("idmissaoespacial")
+          .eq("idusuario", usuario.idusuario);
+
+        const favoritosMap: Record<number, boolean> = {};
+
+        favoritosBanco?.forEach((favorito) => {
+          favoritosMap[favorito.idmissaoespacial] = true;
+        });
+
+        setFavoritos(favoritosMap);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    carregarFavoritos();
+  }, []);
+
+  const toggleFavorito = async (idmissaoespacial: number) => {
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        console.error("Usuário não autenticado");
+        return;
+      }
+
+      const { data: usuario, error: usuarioError } = await supabase
+        .from("usuario")
+        .select("idusuario")
+        .eq("id", user.id)
+        .single();
+
+      if (usuarioError || !usuario) {
+        console.error("Usuário não encontrado na tabela usuario");
+        return;
+      }
+
+      const favoritoAtual = favoritos[idmissaoespacial];
+
+      if (favoritoAtual) {
+        const { error } = await supabase
+          .from("favoritousuariomissao")
+          .delete()
+          .eq("idmissaoespacial", idmissaoespacial)
+          .eq("idusuario", usuario.idusuario);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("favoritousuariomissao").insert({
+          idmissaoespacial,
+          idusuario: usuario.idusuario,
+        });
+
+        if (error) throw error;
+      }
+
+      setFavoritos((prev) => ({
+        ...prev,
+        [idmissaoespacial]: !prev[idmissaoespacial],
+      }));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const missoesVisiveis = missoes.slice(0, pagina * registrosPorPagina);
 
@@ -138,8 +239,22 @@ export default function Missoes() {
           {missoesVisiveis.map((missao) => (
             <div
               key={missao.idmissaoespacial}
-              className="overflow-hidden rounded-2xl border border-purple-700 bg-[#3b1544]"
+              className="relative overflow-hidden rounded-2xl border border-purple-700 bg-[#3b1544]"
             >
+              <button
+                onClick={() => toggleFavorito(missao.idmissaoespacial)}
+                aria-label="Favoritar"
+                className="absolute right-4 bottom-4 z-10 rounded-full p-2 hover:bg-white/10"
+              >
+                <Star
+                  size={18}
+                  className={
+                    favoritos[missao.idmissaoespacial]
+                      ? "fill-pink-500 text-pink-500"
+                      : "text-gray-400"
+                  }
+                />
+              </button>
               <div className="p-6">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <h2 className="text-2xl font-bold">{missao.nome}</h2>
@@ -170,6 +285,16 @@ export default function Missoes() {
                       ? new Date(missao.datalancamento).toLocaleDateString(
                           "pt-BR",
                         )
+                      : "—"}
+                  </div>
+
+                  <div>
+                    <span className="text-gray-400">Corpo Celeste:</span>{" "}
+                    {missao.missaocorpoceleste && missao.missaocorpoceleste.length > 0
+                      ? missao.missaocorpoceleste
+                          .map((mc) => mc.corpoceleste?.nome)
+                          .filter(Boolean)
+                          .join(", ")
                       : "—"}
                   </div>
                 </div>

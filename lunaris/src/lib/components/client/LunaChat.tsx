@@ -1,22 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { Bot, Send, X, MessageCircle, Loader2 } from "lucide-react";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 
 interface Mensagem {
   autor: "user" | "bot";
   texto: string;
 }
-
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-
-const model = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash",
-  systemInstruction: `Você é a Luna 🌙, uma assistente astronômica simpática e apaixonada pelo universo. 
-Responda sempre em português do Brasil, de forma envolvente e curiosa. 
-Foque em temas de astronomia, espaço, planetas, estrelas, galáxias e missões espaciais. 
-Seja amigável e use emojis relacionados ao espaço ocasionalmente. 
-Respostas curtas e diretas são preferidas.`,
-});
 
 export default function LunaChat() {
   const [aberto, setAberto] = useState(false);
@@ -31,7 +19,6 @@ export default function LunaChat() {
   ]);
 
   const fimDaListaRef = useRef<HTMLDivElement>(null);
-  const chatRef = useRef(model.startChat({ history: [] }));
 
   useEffect(() => {
     fimDaListaRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -46,59 +33,71 @@ export default function LunaChat() {
     setCarregando(true);
 
     try {
-      const resultado = await chatRef.current.sendMessage(pergunta);
-      const resposta = resultado.response.text();
+      const response = await fetch("http://localhost:3000/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          mensagem: pergunta,
+        }),
+      });
 
-      setMensagens((prev) => [...prev, { autor: "bot", texto: resposta }]);
-    } catch (erro: any) {
-      console.error("Erro ao chamar Gemini:", erro);
+      const data = await response.json();
 
-      const is429 = erro?.message?.includes("429");
-      const retryMatch = erro?.message?.match(/retry in (\d+)/i);
-      const segundos = retryMatch ? parseInt(retryMatch[1]) + 1 : 60;
-
-      if (is429) {
-        setMensagens((prev) => [
-          ...prev,
-          {
-            autor: "bot",
-            texto: `⏳ Limite atingido. Tentando novamente em ${segundos}s...`,
-          },
-        ]);
-        setTimeout(async () => {
-          try {
-            const resultado = await chatRef.current.sendMessage(pergunta);
-            setMensagens((prev) => [
-              ...prev.slice(0, -1),
-              { autor: "bot", texto: resultado.response.text() },
-            ]);
-          } catch {
-            setMensagens((prev) => [
-              ...prev.slice(0, -1),
-              {
-                autor: "bot",
-                texto:
-                  "❌ Cota esgotada. Crie uma nova chave em aistudio.google.com.",
-              },
-            ]);
-          } finally {
-            setCarregando(false);
-          }
-        }, segundos * 1000);
-        return;
+      if (!response.ok) {
+        throw new Error(data.erro || "Erro ao consultar chatbot");
       }
 
       setMensagens((prev) => [
         ...prev,
         {
           autor: "bot",
-          texto: "Ops! Tive um problema 🌌. Verifique sua chave de API.",
+          texto: data.resposta,
+        },
+      ]);
+    } catch (erro: any) {
+      console.error("Erro ao consultar chatbot:", erro);
+
+      let mensagemErro =
+        "🌌 Desculpe, estou com dificuldades para responder no momento.";
+
+      const erroTexto = String(
+        erro?.message || erro
+      ).toLowerCase();
+
+      if (
+        erroTexto.includes("503") ||
+        erroTexto.includes("service unavailable") ||
+        erroTexto.includes("high demand")
+      ) {
+        mensagemErro =
+          "🚀 Estou recebendo muitas consultas no momento. Tente novamente em alguns segundos.";
+      } else if (
+        erroTexto.includes("429") ||
+        erroTexto.includes("quota")
+      ) {
+        mensagemErro =
+          "⏳ Meu limite de consultas foi atingido temporariamente. Tente novamente mais tarde.";
+      } else if (
+        erroTexto.includes("failed to fetch") ||
+        erroTexto.includes("networkerror")
+      ) {
+        mensagemErro =
+          "🔌 Não consegui me conectar aos meus sistemas. Verifique se o servidor está rodando.";
+      }
+
+      setMensagens((prev) => [
+        ...prev,
+        {
+          autor: "bot",
+          texto: mensagemErro,
         },
       ]);
     } finally {
       setCarregando(false);
     }
-  };
+  }
 
   return (
     <>
@@ -135,12 +134,11 @@ export default function LunaChat() {
           <div className="flex-1 space-y-4 overflow-y-auto p-4">
             {mensagens.map((msg, index) => (
               <div
-                key={index}
-                className={`max-w-[85%] rounded-2xl p-3 text-sm text-white ${
-                  msg.autor === "user"
+                key={`${msg.autor}-${index}`}
+                className={`max-w-[85%] rounded-2xl p-3 text-sm text-white ${msg.autor === "user"
                     ? "ml-auto bg-fuchsia-700"
                     : "bg-white/10"
-                }`}
+                  }`}
               >
                 {msg.texto}
               </div>

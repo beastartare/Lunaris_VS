@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, Lock, User, UserPlus, EyeOff, ArrowLeft } from "lucide-react";
+import { Mail, Lock, User, UserPlus, EyeOff, ArrowLeft, Globe, CloudSun, Telescope } from "lucide-react";
 import fundo from "../../assets/fundo.png";
 import { supabase } from "../supabase";
 
@@ -11,6 +11,9 @@ export default function Register() {
     senha: "",
     confirmarSenha: "",
   });
+
+  // 0 = Visitante, 1 = Pesquisador Astronômico, 2 = Pesquisador Meteorológico
+  const [tipoAcesso, setTipoAcesso] = useState<0 | 1 | 2>(0);
 
   function handleChange(e) {
     setForm({
@@ -41,13 +44,36 @@ export default function Register() {
 
       if (!user) throw new Error("Usuário não encontrado após cadastro.");
 
-      const { error: profileError } = await supabase.from("usuario").insert({
-        id: user.id,
-        nome: form.nome,
-        username: form.username,
-        email: form.email,
-        tipo_acesso_usuario: 0,
-      });
+      // Busca o maior id existente
+      const { data: ultimoUsuario, error: ultimoErro } = await supabase
+        .from("usuario")
+        .select("idusuario")
+        .order("idusuario", { ascending: false })
+        .limit(1);
+
+      if (ultimoErro) throw ultimoErro;
+
+      // Define o próximo ID
+      const novoId =
+        ultimoUsuario && ultimoUsuario.length > 0
+          ? ultimoUsuario[0].idusuario + 1
+          : 1;
+
+      // Insere o usuário
+      const { error: profileError } = await supabase
+        .from("usuario")
+        .insert({
+          idusuario: novoId,
+          nome: form.nome,
+          username: form.username,
+          email: form.email,
+          tipo_acesso_usuario: 0,
+        });
+
+      if (profileError) {
+        console.error(profileError);
+        throw profileError;
+      }
       if (profileError) {
         console.error(profileError);
         throw profileError;
@@ -71,7 +97,10 @@ export default function Register() {
       <div className="relative z-10 w-full max-w-6xl">
         <div className="flex justify-center lg:justify-end">
           <div className="w-full max-w-xl rounded-4xl border border-pink-200/15 bg-[#2a102f]/55 backdrop-blur-2xl p-10 shadow-2xl shadow-pink-900/20">
-            <button className="flex items-center gap-2 text-pink-200/80 hover:text-pink-100 mb-8">
+            <button
+              onClick={() => window.history.back()}
+              className="flex items-center gap-2 text-pink-200/80 hover:text-pink-100 mb-8"
+            >
               <ArrowLeft size={18} />
               Voltar
             </button>
@@ -186,6 +215,40 @@ export default function Register() {
                     onChange={handleChange}
                     className="w-full bg-transparent outline-none text-pink-50 placeholder:text-pink-100/40"
                   />
+                </div>
+              </div>
+
+              {/* Tipo de Perfil */}
+              <div>
+                <label className="block text-sm tracking-widest text-pink-100/80 mb-3">
+                  TIPO DE PERFIL
+                </label>
+
+                <div className="grid grid-cols-3 gap-2">
+                  {([
+                    { valor: 0, label: "Visitante", icon: Globe, desc: "Explorador" },
+                    { valor: 1, label: "Astronômico", icon: Telescope, desc: "Pesquisador" },
+                    { valor: 2, label: "Meteorológico", icon: CloudSun, desc: "Pesquisador" },
+                  ] as const).map(({ valor, label, icon: Icon, desc }) => (
+                    <button
+                      key={valor}
+                      type="button"
+                      onClick={() => setTipoAcesso(valor)}
+                      className={`flex flex-col items-center gap-2 rounded-2xl border px-3 py-4 text-center transition-all duration-200 ${tipoAcesso === valor
+                          ? "border-pink-400/60 bg-pink-400/15 text-pink-100 shadow-lg shadow-pink-900/30"
+                          : "border-pink-300/15 bg-white/5 text-pink-100/50 hover:bg-white/10 hover:text-pink-100/80"
+                        }`}
+                    >
+                      <Icon
+                        size={20}
+                        className={tipoAcesso === valor ? "text-pink-300" : "text-pink-200/50"}
+                      />
+                      <div>
+                        <p className="text-xs font-semibold leading-tight">{label}</p>
+                        <p className="text-[10px] text-pink-100/40 mt-0.5">{desc}</p>
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
 

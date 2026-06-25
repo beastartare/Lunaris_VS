@@ -35,6 +35,8 @@ export default function CorposCelestes() {
 
   const registrosPorPagina = 6;
 
+  const [favoritos, setFavoritos] = useState<Record<number, boolean>>({});
+
   const obterIcone = (tipo: string) => {
     switch (tipo) {
       case "Planeta":
@@ -142,6 +144,96 @@ export default function CorposCelestes() {
     buscarCorpos();
   }, []);
 
+  const toggleFavorito = async (idcorpoceleste: number) => {
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        console.error("Usuário não autenticado");
+        return;
+      }
+
+      const { data: usuario, error: usuarioError } = await supabase
+        .from("usuario")
+        .select("idusuario")
+        .eq("id", user.id)
+        .single();
+
+      if (usuarioError || !usuario) {
+        console.error("Usuário não encontrado na tabela usuario");
+        return;
+      }
+
+      const favoritoAtual = favoritos[idcorpoceleste];
+
+      if (favoritoAtual) {
+        const { error } = await supabase
+          .from("favoritocorpocelesteusuario")
+          .delete()
+          .eq("idcorpoceleste", idcorpoceleste)
+          .eq("idusuario", usuario.idusuario);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("favoritocorpocelesteusuario")
+          .insert({
+            idcorpoceleste,
+            idusuario: usuario.idusuario,
+          });
+
+        if (error) throw error;
+      }
+
+      setFavoritos((prev) => ({
+        ...prev,
+        [idcorpoceleste]: !prev[idcorpoceleste],
+      }));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    const carregarFavoritos = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) return;
+
+        const { data: usuario } = await supabase
+          .from("usuario")
+          .select("idusuario")
+          .eq("id", user.id)
+          .single();
+
+        if (!usuario) return;
+
+        const { data: favoritosBanco } = await supabase
+          .from("favoritocorpocelesteusuario")
+          .select("idcorpoceleste")
+          .eq("idusuario", usuario.idusuario);
+
+        const favoritosMap: Record<number, boolean> = {};
+
+        favoritosBanco?.forEach((favorito) => {
+          favoritosMap[favorito.idcorpoceleste] = true;
+        });
+
+        setFavoritos(favoritosMap);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    carregarFavoritos();
+  }, []);
+
   const corposVisiveis = corpos.slice(0, pagina * registrosPorPagina);
 
   return (
@@ -218,8 +310,22 @@ export default function CorposCelestes() {
               return (
                 <div
                   key={corpo.idcorpoceleste}
-                  className="rounded-3xl border border-purple-700 bg-[#35133c] p-6 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+                  className="relative rounded-3xl border border-purple-700 bg-[#35133c] p-6 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
                 >
+                  <button
+                    onClick={() => toggleFavorito(corpo.idcorpoceleste)}
+                    aria-label="Favoritar"
+                    className="absolute right-4 top-4 rounded-full p-2 hover:bg-white/10"
+                  >
+                    <Star
+                      size={18}
+                      className={
+                        favoritos[corpo.idcorpoceleste]
+                          ? "text-pink-500"
+                          : "text-gray-400"
+                      }
+                    />
+                  </button>
                   <div className="mb-5 flex items-center gap-4">
                     <div
                       className={`rounded-2xl p-4 ${obterCorIcone(

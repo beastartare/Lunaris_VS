@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../../../supabase";
+import { getIdusuario } from "../../../utils/getIdusuario";
 
 export default function FormMaterialEstudo() {
   const [titulo, setTitulo] = useState("");
@@ -45,21 +46,16 @@ export default function FormMaterialEstudo() {
         return;
       }
 
+      const idusuario = await getIdusuario();
       const arquivoBase64 = await converterParaBase64(arquivo);
 
       const { error } = await supabase.from("materialestudo").insert({
-        idusuario: 2,
-
+        idusuario,
         titulo,
-
         autor,
-
         descricao,
-
         tipo_arquivo: tipoArquivo,
-
         data_lancamento: new Date().toISOString(),
-
         arquivo: arquivoBase64,
       });
 

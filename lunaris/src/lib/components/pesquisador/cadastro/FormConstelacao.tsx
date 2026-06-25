@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../../../supabase";
+import { getIdusuario } from "../../../utils/getIdusuario";
 
 export default function FormConstelacao() {
   const [nome, setNome] = useState("");
@@ -8,11 +9,11 @@ export default function FormConstelacao() {
 
   const salvarConstelacao = async () => {
     try {
+      const idusuario = await getIdusuario();
+
       const { error } = await supabase.from("constelacao").insert({
-        idusuario: 2,
-
+        idusuario,
         nome,
-
         descricao,
       });
 

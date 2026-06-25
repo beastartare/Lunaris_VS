@@ -1,14 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../../../supabase";
+import { fileToBase64 } from "../../../utils/imagem";
 
-export default function FormEvento() {
+interface FormEventoProps {
+  tipoFixo?: "astronomico" | "meteorologico";
+}
+
+interface CorpoCeleste {
+  idcorpoceleste: number;
+  nome: string;
+}
+
+export default function FormEvento({ tipoFixo }: FormEventoProps = {}) {
   const [tipoEvento, setTipoEvento] = useState<"astronomico" | "meteorologico">(
-    "astronomico",
+    tipoFixo ?? "astronomico",
   );
 
   const [descricao, setDescricao] = useState("");
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
+  const [dataHora, setDataHora] = useState("");
 
   const [categoriaAstro, setCategoriaAstro] = useState("");
 
@@ -18,39 +29,70 @@ export default function FormEvento() {
 
   const [imagem, setImagem] = useState<File | null>(null);
 
-  const converterParaBase64 = (arquivo: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
+  const [corposCelestes, setCorposCelestes] = useState<CorpoCeleste[]>([]);
+  const [idCorpoCeleste, setIdCorpoCeleste] = useState("");
 
-      reader.readAsDataURL(arquivo);
-
-      reader.onload = () => {
-        const resultado = reader.result as string;
-
-        resolve(resultado.split(",")[1]);
-      };
-
-      reader.onerror = reject;
-    });
+  const buscarCorposCelestes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("corpoceleste")
+        .select("idcorpoceleste, nome")
+        .order("nome");
+      if (error) throw error;
+      setCorposCelestes(data || []);
+    } catch (err) {
+      console.error(err);
+    }
   };
+
+  useEffect(() => {
+    buscarCorposCelestes();
+  }, []);
 
   const salvarEvento = async () => {
     try {
-      let imagemBase64 = null;
+      if (tipoEvento === "astronomico" && !idCorpoCeleste) {
+        alert("Por favor, selecione um corpo celeste para o evento astronômico.");
+        return;
+      }
+
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        alert("Usuário não autenticado.");
+        return;
+      }
+
+      const { data: usuario, error: usuarioError } = await supabase
+        .from("usuario")
+        .select("idusuario")
+        .eq("id", user.id)
+        .single();
+
+      if (usuarioError || !usuario) {
+        alert("Usuário não encontrado.");
+        return;
+      }
+
+      let imagensArray: string[] = [];
 
       if (imagem) {
-        imagemBase64 = await converterParaBase64(imagem);
+        const imagemBase64 = await fileToBase64(imagem);
+        imagensArray = [imagemBase64];
       }
 
       const { data: eventoData, error: eventoError } = await supabase
         .from("evento")
         .insert({
-          idusuario: 2,
+          idusuario: usuario.idusuario,
           descricao,
           latitude: Number(latitude),
           longitude: Number(longitude),
-          datahora: new Date().toISOString(),
-          imagem: imagemBase64,
+          datahora: new Date(dataHora).toISOString(),
+          imagem: imagensArray.length > 0 ? imagensArray : null,
         })
         .select()
         .single();
@@ -65,6 +107,13 @@ export default function FormEvento() {
         });
 
         if (error) throw error;
+
+        const { error: relError } = await supabase.from("corpocelesteevento").insert({
+          idcorpoceleste: Number(idCorpoCeleste),
+          idevento: eventoData.idevento,
+        });
+
+        if (relError) throw relError;
       } else {
         const { error } = await supabase.from("eventometereologico").insert({
           idevento: eventoData.idevento,
@@ -79,9 +128,11 @@ export default function FormEvento() {
       setDescricao("");
       setLatitude("");
       setLongitude("");
+      setDataHora("");
       setCategoriaAstro("");
       setCategoriaMet("");
       setDeclinacao("");
+      setIdCorpoCeleste("");
       setImagem(null);
     } catch (err) {
       console.error(err);
@@ -91,34 +142,52 @@ export default function FormEvento() {
 
   return (
     <div className="max-w-3xl">
-      {" "}
       <h2 className="mb-6 text-3xl font-bold">Cadastro de Evento </h2>
-      ```
-      <div className="mb-6 flex gap-3">
-        <button
-          onClick={() => setTipoEvento("astronomico")}
-          className={`rounded-xl px-5 py-3 ${
-            tipoEvento === "astronomico" ? "bg-fuchsia-700" : "bg-[#3b1544]"
-          }`}
-        >
-          Astronômico
-        </button>
 
-        <button
-          onClick={() => setTipoEvento("meteorologico")}
-          className={`rounded-xl px-5 py-3 ${
-            tipoEvento === "meteorologico" ? "bg-fuchsia-700" : "bg-[#3b1544]"
-          }`}
-        >
-          Meteorológico
-        </button>
-      </div>
+      {/* Seletor de tipo — oculto se tipoFixo foi definido */}
+      {!tipoFixo && (
+        <div className="mb-6 flex gap-3">
+          <button
+            onClick={() => setTipoEvento("astronomico")}
+            className={`rounded-xl px-5 py-3 ${
+              tipoEvento === "astronomico" ? "bg-fuchsia-700" : "bg-[#3b1544]"
+            }`}
+          >
+            Astronômico
+          </button>
+
+          <button
+            onClick={() => setTipoEvento("meteorologico")}
+            className={`rounded-xl px-5 py-3 ${
+              tipoEvento === "meteorologico" ? "bg-fuchsia-700" : "bg-[#3b1544]"
+            }`}
+          >
+            Meteorológico
+          </button>
+        </div>
+      )}
+
+      {tipoFixo && (
+        <div className="mb-6">
+          <span className="inline-block rounded-xl bg-fuchsia-900/50 px-4 py-2 text-sm font-medium text-fuchsia-300">
+            Tipo: {tipoFixo === "astronomico" ? "Astronômico" : "Meteorológico"}
+          </span>
+        </div>
+      )}
+
       <div className="space-y-4">
         <input
           type="text"
           placeholder="Descrição"
           value={descricao}
           onChange={(e) => setDescricao(e.target.value)}
+          className="w-full rounded-xl bg-[#3b1544] p-3"
+        />
+
+        <input
+          type="datetime-local"
+          value={dataHora}
+          onChange={(e) => setDataHora(e.target.value)}
           className="w-full rounded-xl bg-[#3b1544] p-3"
         />
 
@@ -155,6 +224,19 @@ export default function FormEvento() {
               onChange={(e) => setDeclinacao(e.target.value)}
               className="w-full rounded-xl bg-[#3b1544] p-3"
             />
+
+            <select
+              value={idCorpoCeleste}
+              onChange={(e) => setIdCorpoCeleste(e.target.value)}
+              className="w-full rounded-xl bg-[#3b1544] p-3"
+            >
+              <option value="">Selecione o Corpo Celeste associado</option>
+              {corposCelestes.map((corpo) => (
+                <option key={corpo.idcorpoceleste} value={corpo.idcorpoceleste}>
+                  {corpo.nome}
+                </option>
+              ))}
+            </select>
           </>
         )}
 

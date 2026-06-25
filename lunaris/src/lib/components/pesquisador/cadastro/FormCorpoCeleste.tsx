@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../../supabase";
+import { getIdusuario } from "../../../utils/getIdusuario";
 
 interface Constelacao {
   idconstelacao: number;
@@ -40,17 +41,14 @@ export default function FormCorpoCeleste() {
 
   const salvarCorpoCeleste = async () => {
     try {
+      const idusuario = await getIdusuario();
+
       const { error } = await supabase.from("corpoceleste").insert({
-        idusuario: 2,
-
+        idusuario,
         idconstelacao: Number(idConstelacao),
-
         nome,
-
         descricao,
-
         distancia: Number(distancia),
-
         tipo_corpo_celeste: tipo,
       });
 

@@ -6,9 +6,9 @@ INSERT INTO Usuario (
     username,
     tipo_acesso_usuario
 ) VALUES
-(1, 'Administrador', 'lunaris@email.com', 'admin123', 'admin', 3),
-(2, 'Beariz Tartare', 'beastartare@gmail.com', '123456', 'bea', 1),
-(3, 'Rafaela Savaris', 'rafasavaris24@gmail.com', '123456', 'rafa', 2);
+(1, 'Administrador', 'lunaris@email.com', '12345678', 'admin', 3),
+(2, 'Beariz Tartare', 'beastartare@gmail.com', '12345678', 'bea', 1),
+(3, 'Rafaela Savaris', 'rafasavaris24@gmail.com', '12345678', 'rafa', 2);
 
 INSERT INTO Constelacao (
     idConstelacao,

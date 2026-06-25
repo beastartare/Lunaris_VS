@@ -1,7 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../../../supabase";
+import { getIdusuario } from "../../../utils/getIdusuario";
+
+interface CorpoCeleste {
+  idcorpoceleste: number;
+  nome: string;
+}
 
 export default function FormMissao() {
+  const [corposCelestes, setCorposCelestes] = useState<CorpoCeleste[]>([]);
+  const [idCorpoCeleste, setIdCorpoCeleste] = useState("");
   const [nome, setNome] = useState("");
 
   const [agencia, setAgencia] = useState("");
@@ -12,23 +20,56 @@ export default function FormMissao() {
 
   const [dataLancamento, setDataLancamento] = useState("");
 
-  const salvarMissao = async () => {
+  const buscarCorposCelestes = async () => {
     try {
-      const { error } = await supabase.from("missaoespacial").insert({
-        idusuario: 2,
-
-        nome,
-
-        agencia,
-
-        status_missao: statusMissao,
-
-        descricao,
-
-        datalancamento: dataLancamento || null,
-      });
+      const { data, error } = await supabase
+        .from("corpoceleste")
+        .select("idcorpoceleste, nome")
+        .order("nome");
 
       if (error) throw error;
+      setCorposCelestes(data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    buscarCorposCelestes();
+  }, []);
+
+  const salvarMissao = async () => {
+    try {
+      if (!idCorpoCeleste) {
+        alert("Por favor, selecione um corpo celeste.");
+        return;
+      }
+
+      const idusuario = await getIdusuario();
+
+      const { data: missao, error } = await supabase
+        .from("missaoespacial")
+        .insert({
+          idusuario,
+          nome,
+          agencia,
+          status_missao: statusMissao,
+          descricao,
+          datalancamento: dataLancamento || null,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const { error: relError } = await supabase
+        .from("missaocorpoceleste")
+        .insert({
+          idmissaoespacial: missao.idmissaoespacial,
+          idcorpoceleste: Number(idCorpoCeleste),
+        });
+
+      if (relError) throw relError;
 
       alert("Missão espacial cadastrada com sucesso!");
 
@@ -37,6 +78,7 @@ export default function FormMissao() {
       setStatusMissao("");
       setDescricao("");
       setDataLancamento("");
+      setIdCorpoCeleste("");
     } catch (err) {
       console.error(err);
 
@@ -81,6 +123,19 @@ export default function FormMissao() {
           <option value="Cancelada">Cancelada</option>
 
           <option value="Falhou">Falhou</option>
+        </select>
+
+        <select
+          value={idCorpoCeleste}
+          onChange={(e) => setIdCorpoCeleste(e.target.value)}
+          className="w-full rounded-xl bg-[#3b1544] p-3"
+        >
+          <option value="">Selecione o Corpo Celeste</option>
+          {corposCelestes.map((corpo) => (
+            <option key={corpo.idcorpoceleste} value={corpo.idcorpoceleste}>
+              {corpo.nome}
+            </option>
+          ))}
         </select>
 
         <input

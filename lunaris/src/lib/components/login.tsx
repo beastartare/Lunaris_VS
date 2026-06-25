@@ -49,11 +49,11 @@ export default function Login() {
       return;
     }
     if (profile.tipo_acesso_usuario === 0) {
-      navigate("/client/layoult");
+      navigate("/client/dashboard");
       return;
     }
 
-    navigate("/pesquisador/layoult");
+    navigate("/pesquisador/dashboard");
   }
 
   return (

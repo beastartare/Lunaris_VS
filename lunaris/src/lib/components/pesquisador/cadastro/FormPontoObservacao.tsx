@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../../../supabase";
+import { getIdusuario } from "../../../utils/getIdusuario";
 
 export default function FormPontoObservacao() {
   const [nome, setNome] = useState("");
@@ -12,15 +13,13 @@ export default function FormPontoObservacao() {
 
   const salvarPontoObservacao = async () => {
     try {
+      const idusuario = await getIdusuario();
+
       const { error } = await supabase.from("pontoobservacao").insert({
-        idusuario: 2,
-
+        idusuario,
         nome,
-
         descricao,
-
         latitude: Number(latitude),
-
         longitude: Number(longitude),
       });
 
