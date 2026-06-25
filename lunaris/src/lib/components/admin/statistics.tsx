@@ -51,7 +51,7 @@ export default function Statistics() {
       color: "#d4d4d8",
     },
     itemStyle: {
-      color: "#ec4899",
+      color: "#48ec87",
     },
   };
 
@@ -149,7 +149,9 @@ export default function Statistics() {
                     Usuários
                 </h3>
 
-                <p className="text-4xl font-light mt-3">{stats.usuarios - 1}</p>
+                <p className="text-4xl font-light mt-3">
+                  {stats.usuarios === 0 ? 0 : stats.usuarios - 1}
+                </p>
                 </div>
 
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md">
@@ -272,8 +274,13 @@ export default function Statistics() {
                     <h3 className="text-xl mb-6">
                         Distribuição de Usuários
                     </h3>
-
+                      {usuariosPorTipo.length === 0 ? (
+                        <div className="h-[320px] flex items-center justify-center text-zinc-500">
+                          Sem informações
+                        </div>
+                      ) : (
                     <div className="h-[320px]">
+          
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                         <Pie
@@ -292,17 +299,24 @@ export default function Statistics() {
                         <Tooltip
                           {...tooltipProps}
                           cursor={false}
-                          isAnimationActive={false}
+                          isAnimationActive={true}
                         />
                         </PieChart>
                     </ResponsiveContainer>
                     </div>
+                      )}
                 </div>
+                  
                 { /* Gráfico eventos */ }
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
                 <h3 className="text-xl mb-6">
                     Eventos por Categoria
                 </h3>
+                {eventosCategoria.length === 0 ? (
+                  <div className="h-[320px] flex items-center justify-center text-zinc-500">
+                    Sem informações
+                  </div>
+                  ) : (
                     <div className="h-[320px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={eventosCategoria}>
@@ -323,6 +337,7 @@ export default function Statistics() {
                         </BarChart>
                     </ResponsiveContainer>
                     </div>
+                  )}
                 </div>
             </div>
             </main>

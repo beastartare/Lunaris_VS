@@ -1,15 +1,14 @@
 CREATE TABLE Usuario (
-    idUsuario integer PRIMARY KEY,
+    idUsuario identity PRIMARY KEY,
     nome varchar(100),
     email varchar(50),
-    senha varchar(255),
     username varchar(50),
     tipo_acesso_usuario integer
 );
 
 CREATE TABLE Evento (
-    idEvento integer PRIMARY KEY,
-    idUsuario integer,
+    idEvento identity PRIMARY KEY,
+    idUsuario identity,
     longitude numeric,
     latitude numeric,
     dataHora timestamp,
@@ -19,30 +18,30 @@ CREATE TABLE Evento (
 );
 
 CREATE TABLE EventoMetereologico (
-    idEvento integer PRIMARY KEY,
+    idEvento identity PRIMARY KEY,
     categoria_evento_met varchar(30),
     FOREIGN KEY (idEvento) REFERENCES Evento(idEvento)
 );
 
 CREATE TABLE EventoAstronomico (
-    idEvento integer PRIMARY KEY,
+    idEvento identity PRIMARY KEY,
     categoria_evento_astro varchar(30),
     declinacao numeric,
     FOREIGN KEY (idEvento) REFERENCES Evento(idEvento)
 );
 
 CREATE TABLE Constelacao (
-    idConstelacao integer PRIMARY KEY,
-    idUsuario integer,
+    idConstelacao identity PRIMARY KEY,
+    idUsuario identity,
     descricao varchar(100),
     nome varchar(50),
     FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario)
 );
 
 CREATE TABLE CorpoCeleste (
-    idCorpoCeleste integer PRIMARY KEY,
-    idConstelacao integer NULL,
-    idUsuario integer,
+    idCorpoCeleste identity PRIMARY KEY,
+    idConstelacao identity NULL,
+    idUsuario identity,
     tipo_corpo_celeste varchar(30),
     distancia numeric,
     nome varchar(100),
@@ -52,8 +51,8 @@ CREATE TABLE CorpoCeleste (
 );
 
 CREATE TABLE MissaoEspacial (
-    idMissaoEspacial integer PRIMARY KEY,
-    idUsuario integer,
+    idMissaoEspacial identity PRIMARY KEY,
+    idUsuario identity,
     nome varchar(50),
     status_missao varchar(30),
     descricao varchar(100),
@@ -63,8 +62,8 @@ CREATE TABLE MissaoEspacial (
 );
 
 CREATE TABLE PontoObservacao (
-    idPontoObs integer PRIMARY KEY,
-    idUsuario integer,
+    idPontoObs identity PRIMARY KEY,
+    idUsuario identity,
     latitude numeric,
     longitude numeric,
     descricao varchar(100),
@@ -73,8 +72,8 @@ CREATE TABLE PontoObservacao (
 );
 
 CREATE TABLE DadoMetereologico (
-    idDadoMetereologico integer PRIMARY KEY,
-    idPontoObs integer,
+    idDadoMetereologico identity PRIMARY KEY,
+    idPontoObs identity,
     umidade numeric,
     indiceUV numeric,
     temperatura numeric,
@@ -85,8 +84,8 @@ CREATE TABLE DadoMetereologico (
 );
 
 CREATE TABLE MaterialEstudo (
-    idMaterialEstudo integer PRIMARY KEY,
-    idUsuario integer,
+    idMaterialEstudo identity PRIMARY KEY,
+    idUsuario identity,
     data_lancamento timestamp,
     tipo_arquivo varchar(30),
     autor varchar(100),
@@ -97,74 +96,74 @@ CREATE TABLE MaterialEstudo (
 );
 
 CREATE TABLE FavoritoMaterialUsuario (
-    idMaterialEstudo integer,
-    idUsuario integer,
+    idMaterialEstudo identity,
+    idUsuario identity,
     PRIMARY KEY (idMaterialEstudo, idUsuario),
     FOREIGN KEY (idMaterialEstudo) REFERENCES MaterialEstudo(idMaterialEstudo),
     FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario)
 );
 
 CREATE TABLE FavoritoConstelacaoUsuario (
-    idUsuario integer,
-    idConstelacao integer,
+    idUsuario identity,
+    idConstelacao identity,
     PRIMARY KEY (idUsuario, idConstelacao),
     FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario),
     FOREIGN KEY (idConstelacao) REFERENCES Constelacao(idConstelacao)
 );
 
 CREATE TABLE FavoritoCorpoCelesteUsuario (
-    idCorpoCeleste integer,
-    idUsuario integer,
+    idCorpoCeleste identity,
+    idUsuario identity,
     PRIMARY KEY (idCorpoCeleste, idUsuario),
     FOREIGN KEY (idCorpoCeleste) REFERENCES CorpoCeleste(idCorpoCeleste),
     FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario)
 );
 
 CREATE TABLE FavoritoEventoUsuario (
-    idUsuario integer,
-    idEvento integer,
+    idUsuario identity,
+    idEvento identity,
     PRIMARY KEY (idUsuario, idEvento),
     FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario),
     FOREIGN KEY (idEvento) REFERENCES Evento(idEvento)
 );
 
 CREATE TABLE FavoritoPOUsuario (
-    idPontoObs integer,
-    idUsuario integer,
+    idPontoObs identity,
+    idUsuario identity,
     PRIMARY KEY (idPontoObs, idUsuario),
     FOREIGN KEY (idPontoObs) REFERENCES PontoObservacao(idPontoObs),
     FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario)
 );
 
 CREATE TABLE FavoritoUsuarioMissao (
-    idUsuario integer,
-    idMissaoEspacial integer,
+    idUsuario identity,
+    idMissaoEspacial identity,
     PRIMARY KEY (idUsuario, idMissaoEspacial),
     FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario),
     FOREIGN KEY (idMissaoEspacial) REFERENCES MissaoEspacial(idMissaoEspacial)
 );
 
 CREATE TABLE MissaoCorpoCeleste (
-    idCorpoCeleste integer,
-    idMissaoEspacial integer,
+    idCorpoCeleste identity,
+    idMissaoEspacial identity,
     PRIMARY KEY (idCorpoCeleste, idMissaoEspacial),
     FOREIGN KEY (idCorpoCeleste) REFERENCES CorpoCeleste(idCorpoCeleste),
     FOREIGN KEY (idMissaoEspacial) REFERENCES MissaoEspacial(idMissaoEspacial)
 );
 
 CREATE TABLE CorpoCelesteEvento (
-    idCorpoCeleste integer,
-    idEvento integer,
+    idCorpoCeleste identity,
+    idEvento identity,
     PRIMARY KEY (idCorpoCeleste, idEvento),
     FOREIGN KEY (idCorpoCeleste) REFERENCES CorpoCeleste(idCorpoCeleste),
     FOREIGN KEY (idEvento) REFERENCES EventoAstronomico(idEvento)
 );
 
 CREATE TABLE UsuarioEventoPO (
-    idUsuarioEventoPO integer PRIMARY KEY,
-    idEvento integer,
-    idUsuario integer,
-    idPontoObs integer,
+    idUsuarioEventoPO identity PRIMARY KEY,
+    idEvento identity,
+    idUsuario identity,
+    idPontoObs identity,
 
     UNIQUE (idEvento, idUsuario, idPontoObs),
 
