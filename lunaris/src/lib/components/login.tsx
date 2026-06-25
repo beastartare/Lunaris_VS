@@ -6,6 +6,7 @@ import {
   Telescope,
   Orbit,
   BarChart3,
+  Eye,
 } from "lucide-react";
 
 import fundo from "../../assets/fundo.png";
@@ -17,6 +18,7 @@ export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [mostrarSenha, setMostrarSenha] = useState(false);
 
   async function HandleLogin(e) {
   e.preventDefault();
@@ -206,7 +208,7 @@ export default function Login() {
                   <Lock className="text-pink-200/70" size={20} />
 
                   <input
-                    type="password"
+                    type={mostrarSenha ? "text" : "password"}
                     placeholder="Sua senha"
                     className="w-full bg-transparent outline-none text-pink-50 placeholder:text-pink-100/40"
                     value={password}
@@ -216,8 +218,9 @@ export default function Login() {
                   <button
                     type="button"
                     className="text-pink-200/60 hover:text-pink-200 transition"
+                    onClick={() => setMostrarSenha((prev) => !prev)}
                   >
-                    <EyeOff size={20} />
+                    {mostrarSenha ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
 
