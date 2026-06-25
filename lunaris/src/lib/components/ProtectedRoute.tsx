@@ -2,9 +2,6 @@ import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { supabase } from "../supabase";
 
-/**
- * Mapeamento de tipo_acesso_usuario → rota padrão de redirecionamento
- */
 const rotaPadrao: Record<number, string> = {
   0: "/client/dashboard",
   1: "/pesquisador/dashboard",
@@ -12,10 +9,13 @@ const rotaPadrao: Record<number, string> = {
   3: "/admin",
 };
 
-type Status = "loading" | "authorized" | "unauthorized" | "unauthenticated";
+type Status =
+  | "loading"
+  | "authorized"
+  | "unauthorized"
+  | "unauthenticated";
 
 interface ProtectedRouteProps {
-  /** Tipos permitidos: 0=visitante, 1=astro, 2=meteo, 3=admin */
   tiposPermitidos: number[];
   children: React.ReactNode;
 }
@@ -30,6 +30,15 @@ export default function ProtectedRoute({
   useEffect(() => {
     const verificar = async () => {
       try {
+        // Banco apagado -> libera acesso
+        const databaseMissing =
+          sessionStorage.getItem("database_missing");
+
+        if (databaseMissing === "true") {
+          setStatus("authorized");
+          return;
+        }
+
         const {
           data: { user },
           error: userError,
@@ -51,7 +60,8 @@ export default function ProtectedRoute({
           return;
         }
 
-        const tipo: number = usuario.tipo_acesso_usuario;
+        const tipo = usuario.tipo_acesso_usuario;
+
         setTipoUsuario(tipo);
 
         if (tiposPermitidos.includes(tipo)) {
@@ -59,13 +69,14 @@ export default function ProtectedRoute({
         } else {
           setStatus("unauthorized");
         }
-      } catch {
+      } catch (err) {
+        console.error(err);
         setStatus("unauthenticated");
       }
     };
 
     verificar();
-  }, []);
+  }, [tiposPermitidos]);
 
   if (status === "loading") {
     return (
@@ -83,7 +94,6 @@ export default function ProtectedRoute({
   }
 
   if (status === "unauthorized" && tipoUsuario !== null) {
-    // Redireciona para a área correta do usuário
     const destino = rotaPadrao[tipoUsuario] ?? "/";
     return <Navigate to={destino} replace />;
   }

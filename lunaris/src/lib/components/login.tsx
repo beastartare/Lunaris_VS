@@ -19,43 +19,74 @@ export default function Login() {
   const [password, setPassword] = useState("");
 
   async function HandleLogin(e) {
-    e.preventDefault();
+  e.preventDefault();
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+  const { data: usuarios, error: usuariosError } = await supabase
+    .from("usuario")
+    .select("idusuario")
+    .limit(1);
 
-    if (error) {
-      alert(error.message);
-      return;
-    }
+  if (
+    usuariosError ||
+    !usuarios ||
+    usuarios.length === 0
+  ) {
+    sessionStorage.setItem(
+      "database_missing",
+      "true"
+    );
+    const EMAIL_DONO = "lunaris@email.com";
+    const SENHA_DONO = "admin123"
 
-    const userEmail = data.user.email;
-
-    const { data: profile, error: profileError } = await supabase
-      .from("usuario")
-      .select("*")
-      .eq("email", userEmail)
-      .single();
-
-    if (profileError) {
-      alert(profileError.message);
-      return;
-    }
-
-    if (profile.tipo_acesso_usuario === 3) {
+    if (email === EMAIL_DONO && password == SENHA_DONO) {
       navigate("/admin");
       return;
     }
+
+    await supabase.auth.signOut();
+
+    alert(
+      "O sistema não foi inicializado. Apenas o administrador proprietário pode acessar."
+    );
+
+    return;
+  }
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  const userEmail = data.user.email;
+
+  // Fluxo normal
+  const { data: profile, error: profileError } = await supabase
+    .from("usuario")
+    .select("*")
+    .eq("email", userEmail)
+    .single();
+
+  if (profileError) {
+    alert(profileError.message);
+    return;
+  }
+
+  if (profile.tipo_acesso_usuario === 3) {
+    navigate("/admin");
+    return;
+  }
     if (profile.tipo_acesso_usuario === 0) {
       navigate("/client/dashboard");
       return;
     }
 
     navigate("/pesquisador/dashboard");
-  }
-
+}
   return (
     <div
       className="min-h-screen w-full bg-cover bg-center flex items-center justify-center px-6 py-10"
