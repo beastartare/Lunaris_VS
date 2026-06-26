@@ -350,13 +350,17 @@ export default function MinhaBibliotecaPesquisador() {
 
   // ──────────── Render ────────────
   return (
-    <div className="min-h-screen bg-[#2a102f] p-8 text-white">
-      {/* CABEÇALHO */}
-      <div className="mb-8 flex items-center gap-3">
-        <Library size={28} className="text-fuchsia-400" />
+    <div className="text-white">
+      <div className="mb-10 flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Minha Biblioteca</h1>
-          <p className="mt-1 text-gray-300">
+          <div className="mb-2 flex items-center gap-3">
+            <Library size={28} className="text-fuchsia-400" />
+
+            <h1 className="text-5xl font-semibold">
+              Minha Biblioteca
+            </h1>
+          </div>
+          <p className="mt-3 text-lg text-zinc-400">
             Todos os registros que você cadastrou no sistema.
           </p>
         </div>

@@ -42,9 +42,9 @@ const menuItems = [
 export default function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen overflow-hidden bg-gradient-to-br from-[#18051f] via-[#2a0d3d] to-[#14031d] text-white">
-  {/* Glow */}
-  <div className="fixed top-[-150px] left-[-100px] h-[500px] w-[500px] rounded-full bg-pink-500/10 blur-[150px]" />
-  <div className="fixed right-[-100px] bottom-[-200px] h-[500px] w-[500px] rounded-full bg-fuchsia-500/10 blur-[180px]" />
+    {/* Glow */}
+    <div className="fixed top-[-150px] left-[-100px] h-[500px] w-[500px] rounded-full bg-pink-500/10 blur-[150px]" />
+    <div className="fixed right-[-100px] bottom-[-200px] h-[500px] w-[500px] rounded-full bg-fuchsia-500/10 blur-[180px]" />
 
   <div className="relative z-10 flex min-h-screen">
     <aside className="relative w-[280px] overflow-hidden border-r border-white/10">

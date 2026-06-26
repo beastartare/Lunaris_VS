@@ -85,19 +85,19 @@ export default function Cadastros() {
     undefined;
 
   return (
-    <div className="min-h-screen bg-[#2a102f] text-white">
-      <div className="flex min-h-screen">
+    <div className="text-white">
+      <div className="flex gap-8">
         {/* SIDEBAR */}
-        <aside className="w-96 border-r border-fuchsia-900/40 bg-linear-to-b from-[#35133c] to-[#220c27] p-8">
+         <div className="w-[360px] shrink-0 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-8">
           <div className="mb-10">
-            <h1 className="text-4xl font-bold">Cadastros</h1>
+            <h1 className="text-4xl font-semibold">Cadastros</h1>
 
             <p className="mt-3 text-gray-400">
               Gerencie todas as informações do sistema Lunaris.
             </p>
 
             {tipoAcesso !== null && (
-              <span className="mt-4 inline-block rounded-xl bg-fuchsia-900/40 px-3 py-1 text-xs text-fuchsia-300">
+              <span className="mt-4 inline-block rounded-xl bg-fuchsia-500/10 px-3 py-1 text-xs text-fuchsia-300 border border-fuchsia-500/20">
                 {tipoAcesso === 1 ? "Pesquisador Astronômico" : "Pesquisador Meteorológico"}
               </span>
             )}
@@ -138,29 +138,31 @@ export default function Cadastros() {
               })}
             </div>
           )}
-        </aside>
+        </div>
 
         {/* CONTEÚDO */}
-        <main className="flex-1 p-10">
-          <div className="mb-8 rounded-3xl border border-fuchsia-900/30 bg-[#35133c] p-8 shadow-xl">
-            <h2 className="text-3xl font-bold">Painel de Cadastros</h2>
+        <main className="flex-1 space-y-8">
+          {/* CARD DE TÍTULO */}
+          <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-8">
+              <h2 className="text-3xl font-semibold">Painel de Cadastros</h2>
 
-            <p className="mt-3 text-gray-300">
+            <p className="mt-2 text-zinc-400">
               Utilize o menu lateral para cadastrar informações do sistema Lunaris.
             </p>
           </div>
 
-          <div className="rounded-3xl border border-fuchsia-900/30 bg-[#35133c] p-8 shadow-xl">
-            {aba === "meteorologia" && <FormMeteorologia />}
-            {aba === "missoes"      && <FormMissao />}
-            {aba === "corpos"       && <FormCorpoCeleste />}
-            {aba === "constelacoes" && <FormConstelacao />}
-            {aba === "pontos"       && <FormPontoObservacao />}
-            {aba === "eventos"      && <FormEvento tipoFixo={tipoFixoEvento} />}
-            {aba === "materiais"    && <FormMaterialEstudo />}
-          </div>
+            <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-8">
+              {aba === "meteorologia" && <FormMeteorologia />}
+              {aba === "missoes"      && <FormMissao />}
+              {aba === "corpos"       && <FormCorpoCeleste />}
+              {aba === "constelacoes" && <FormConstelacao />}
+              {aba === "pontos"       && <FormPontoObservacao />}
+              {aba === "eventos"      && <FormEvento tipoFixo={tipoFixoEvento} />}
+              {aba === "materiais"    && <FormMaterialEstudo />}
+            </div>
         </main>
       </div>
     </div>
+    
   );
 }
