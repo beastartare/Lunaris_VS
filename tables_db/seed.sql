@@ -84,7 +84,7 @@ INSERT INTO Evento (
     descricao,
     imagem
 ) VALUES
-(1, 1, -48.5482, -27.5949,
+(1, 2, -48.5482, -27.5949,
  '2026-03-15 22:00:00',
  'Chuva de meteoros observada',
  NULL),

@@ -7,7 +7,7 @@ import type {
   MaterialFavorito,
   RankingFavoritos,
   EventoAstroCategoria,
-  VariacaoTemperatura,
+  EventosPorPesquisador,
 } from "./typesStatistics";
 
 type ConstelacaoRow = {
@@ -119,8 +119,10 @@ export async function getEventosAstroCategoria(): Promise<EventoAstroCategoria[]
   return data ?? [];
 }
 
-export async function getVariacaoTemperatura(): Promise<VariacaoTemperatura[]> {
-  const { data, error } = await supabase.rpc("get_variacao_temperatura");
+export async function getEventosPorPesquisador(): Promise<EventosPorPesquisador[]> {
+  const { data, error } = await supabase.rpc(
+    "get_eventos_por_pesquisador"
+  );
   if (error) throw error;
   return data ?? [];
 }
@@ -134,7 +136,7 @@ export async function getDashboardData() {
     materiaisFavoritos,
     rankingFavoritos,
     eventosAstroCategoria,
-    variacaoTemperatura,
+    eventosPorPesquisador,
   ] = await Promise.all([
     getStats(),
     getUsuariosPorTipo(),
@@ -143,7 +145,7 @@ export async function getDashboardData() {
     getMateriaisFavoritos(),
     getRankingFavoritos(),
     getEventosAstroCategoria(),
-    getVariacaoTemperatura(),
+    getEventosPorPesquisador()
   ]);
 
   return {
@@ -154,6 +156,6 @@ export async function getDashboardData() {
     materiaisFavoritos,
     rankingFavoritos,
     eventosAstroCategoria,
-    variacaoTemperatura,
+    eventosPorPesquisador,
   };
 }

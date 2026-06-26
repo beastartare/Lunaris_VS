@@ -1,9 +1,7 @@
-import { supabase } from "../../../lib/supabase";
 import {
   Database,
   ChartNoAxesCombined,
   Orbit,
-  LogOut,
 } from "lucide-react";
 import fundo from "../../../assets/fundo.png";
 import { useNavigate } from "react-router-dom";
@@ -35,14 +33,9 @@ export default function Statistics() {
     materiaisFavoritos,
     rankingFavoritos,
     eventosAstroCategoria,
-    variacaoTemperatura,
+    eventosPorPesquisador,
     loading,
   } = useStatistics();
-
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    navigate("/");
-  }
 
   const tooltipProps = {
     contentStyle: {
@@ -135,14 +128,6 @@ export default function Statistics() {
                 Visão geral da atividade da plataforma.
               </p>
             </div>
-
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-3 px-5 py-3 rounded-xl text-red-300 hover:bg-red-500/10 transition border border-red-400/10"
-            >
-              <LogOut size={20} />
-              <span>Sair</span>
-            </button>
           </div>
 
           {/* Cards de totais */}
@@ -391,10 +376,11 @@ export default function Statistics() {
             <h3 className="text-xl mb-1">
               Eventos Astronômicos por Categoria
             </h3>
+
             <p className="text-zinc-400 text-sm mb-6">
-              Volume de eventos e corpos celestes envolvidos por categoria,
-              cadastrados por pesquisadores astronômicos.
+              Quantidade de eventos astronômicos registrados em cada categoria.
             </p>
+
             {eventosAstroCategoria.length === 0 ? (
               <div className="bg-white/5 border border-white/10 rounded-2xl h-[320px] flex items-center justify-center text-zinc-500">
                 Sem informações
@@ -404,15 +390,9 @@ export default function Statistics() {
                 <div className="h-[320px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={eventosAstroCategoria}>
-                      <XAxis
-                        dataKey="categoria"
-                        tick={{ fill: "#a1a1aa", fontSize: 12 }}
-                      />
-                      <YAxis
-                        allowDecimals={false}
-                        domain={[0, "dataMax"]}
-                        tick={{ fill: "#a1a1aa", fontSize: 12 }}
-                      />
+                      <XAxis dataKey="categoria" tick={{ fill: "#a1a1aa", fontSize: 12 }}/>
+                      <YAxis allowDecimals={false} domain={[0, "dataMax"]} tick={{ fill: "#a1a1aa", fontSize: 12 }}/>
+
                       <Tooltip
                         {...tooltipProps}
                         cursor={false}
@@ -420,40 +400,17 @@ export default function Statistics() {
                         formatter={(value, name) => {
                           const labels: Record<string, string> = {
                             total_eventos: "Eventos",
-                            corpos_celestes_distintos: "Corpos Celestes",
-                            pesquisadores_envolvidos: "Pesquisadores",
                           };
                           const key = String(name);
                           return [value, labels[key] ?? key];
                         }}
                       />
-                      <Legend
-                        formatter={(value) => {
-                          const labels: Record<string, string> = {
-                            total_eventos: "Eventos",
-                            corpos_celestes_distintos: "Corpos Celestes",
-                            pesquisadores_envolvidos: "Pesquisadores",
-                          };
-                          return labels[value] ?? value;
-                        }}
-                        wrapperStyle={{ fontSize: 12, color: "#a1a1aa" }}
-                      />
+
                       <Bar
                         dataKey="total_eventos"
                         fill="#a855f7"
                         radius={[8, 8, 0, 0]}
-                        isAnimationActive={false}
-                      />
-                      <Bar
-                        dataKey="corpos_celestes_distintos"
-                        fill="#ec4899"
-                        radius={[8, 8, 0, 0]}
-                        isAnimationActive={false}
-                      />
-                      <Bar
-                        dataKey="pesquisadores_envolvidos"
-                        fill="#6366f1"
-                        radius={[8, 8, 0, 0]}
+                        activeBar={false}
                         isAnimationActive={false}
                       />
                     </BarChart>
@@ -464,92 +421,43 @@ export default function Statistics() {
           </div>
 
           <div className="h-px bg-white/10 my-12" />
-
-          <div className="mb-10">
+            <div className="mb-10">
             <h3 className="text-xl mb-1">
-              Variação de Temperatura por Ponto de Observação
+              Eventos Registrados por Pesquisador
             </h3>
+
             <p className="text-zinc-400 text-sm mb-6">
-              Amplitude térmica registrada em cada ponto, ordenada da maior
-              para a menor variação.
+              Quantidade total de eventos cadastrados por cada pesquisador da plataforma.
             </p>
-            {variacaoTemperatura.length === 0 ? (
-              <div className="bg-white/5 border border-white/10 rounded-2xl h-[360px] flex items-center justify-center text-zinc-500">
+
+            {eventosPorPesquisador.length === 0 ? (
+              <div className="bg-white/5 border border-white/10 rounded-2xl h-[320px] flex items-center justify-center text-zinc-500">
                 Sem informações
               </div>
             ) : (
               <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                <div
-                  style={{
-                    height: Math.max(280, variacaoTemperatura.length * 52 + 80),
-                  }}
-                >
+                <div className="h-[320px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      layout="vertical"
-                      data={variacaoTemperatura}
-                      margin={{ right: 24 }}
-                    >
-                      <XAxis
-                        type="number"
-                        unit="°C"
-                        tick={{ fill: "#a1a1aa", fontSize: 12 }}
-                      />
-                      <YAxis
-                        dataKey="ponto_observacao"
-                        type="category"
-                        width={150}
-                        tick={{ fill: "#a1a1aa", fontSize: 12 }}
-                      />
+                    <BarChart layout="vertical" data={eventosPorPesquisador.slice(0, 8)}>
+                      <XAxis type="number" hide/>
+                      <YAxis dataKey="pesquisador" type="category" width={140}/>
                       <Tooltip
                         {...tooltipProps}
                         cursor={false}
                         isAnimationActive={false}
                         formatter={(value, name) => {
                           const labels: Record<string, string> = {
-                            temp_minima: "Mínima (°C)",
-                            temp_maxima: "Máxima (°C)",
-                            variacao_temp: "Variação (°C)",
-                            temp_media: "Média (°C)",
+                            total_eventos: "Eventos",
                           };
                           const key = String(name);
                           return [value, labels[key] ?? key];
                         }}
                       />
-                      <Legend
-                        formatter={(value) => {
-                          const labels: Record<string, string> = {
-                            temp_minima: "Mínima",
-                            temp_maxima: "Máxima",
-                            variacao_temp: "Variação",
-                            temp_media: "Média",
-                          };
-                          return labels[value] ?? value;
-                        }}
-                        wrapperStyle={{ fontSize: 12, color: "#a1a1aa" }}
-                      />
                       <Bar
-                        dataKey="temp_minima"
-                        fill="#6366f1"
-                        radius={[0, 4, 4, 0]}
-                        isAnimationActive={false}
-                      />
-                      <Bar
-                        dataKey="temp_maxima"
-                        fill="#ec4899"
-                        radius={[0, 4, 4, 0]}
-                        isAnimationActive={false}
-                      />
-                      <Bar
-                        dataKey="variacao_temp"
+                        dataKey="total_eventos"
                         fill="#a855f7"
                         radius={[0, 8, 8, 0]}
-                        isAnimationActive={false}
-                      />
-                      <Bar
-                        dataKey="temp_media"
-                        fill="#06b6d4"
-                        radius={[0, 4, 4, 0]}
+                        activeBar={false}
                         isAnimationActive={false}
                       />
                     </BarChart>

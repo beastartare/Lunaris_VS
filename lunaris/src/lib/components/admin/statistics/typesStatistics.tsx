@@ -5,6 +5,11 @@ export type Stats = {
   missoes: number;
 };
 
+export type EventosPorPesquisador = {
+  pesquisador: string;
+  total_eventos: number;
+};
+
 export type UsuarioTipo = {
   name: string;
   value: number;
