@@ -35,7 +35,7 @@ export default function Observacoes() {
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
   const [favoritos, setFavoritos] = useState<Record<number, boolean>>({});
-
+  
   // Índice da imagem atual por evento
   const [imagemAtual, setImagemAtual] = useState<Record<number, number>>({});
 
@@ -385,20 +385,22 @@ export default function Observacoes() {
   const eventosVisiveis = eventos.slice(0, pagina * registrosPorPagina);
 
   return (
-    <div className="min-h-screen bg-[#2a102f] p-8 text-white">
+    <div className="text-white">
       {/* CABEÇALHO */}
-      <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="mb-10 flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Eventos</h1>
-          <p className="mt-2 text-gray-300">
+          <h1 className="text-5xl font-semibold">
+            Eventos
+          </h1>
+
+          <p className="mt-3 text-lg text-zinc-400">
             Histórico de eventos astronômicos e meteorológicos.
           </p>
         </div>
 
         <button
           onClick={abrirModal}
-          className="rounded-xl bg-fuchsia-700 px-5 py-3 font-semibold hover:bg-fuchsia-600"
-        >
+          className="rounded-xl border border-pink-400/20 bg-pink-500/20 px-5 py-3 font-medium text-pink-200 transition hover:bg-pink-500/30">
           Nova Observação
         </button>
       </div>

@@ -232,15 +232,14 @@ export default function MaterialEstudo() {
   };
 
   return (
-    <div className="min-h-screen bg-[#2a102f] p-8 text-white">
-      {/* CABEÇALHO */}
-
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Materiais de Estudo</h1>
-
-        <p className="mt-2 text-gray-300">
-          Biblioteca de conteúdos para aprendizado e pesquisa.
-        </p>
+    <div className="text-white">
+      <div className="mb-10 flex items-start justify-between">
+        <div>
+          <h1 className="text-5xl font-semibold">Materiais de Estudo</h1>
+          <p className="mt-3 text-lg text-zinc-400">
+            Biblioteca de conteúdos para aprendizado e pesquisa.
+          </p>
+        </div>
       </div>
 
       {/* PESQUISA */}

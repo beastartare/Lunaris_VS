@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import fundo from "../../../assets/fundo.png";
 import { useNavigate } from "react-router-dom";
+import UserProfileCard from "../../components/shared/UserProfileCard"
 
 import {
   PieChart,
@@ -85,7 +86,7 @@ export default function Statistics() {
             }}
           />
           <div className="absolute inset-0 bg-[#12051d]/70" />
-          <div className="relative z-10 flex flex-col h-full">
+          <div className="relative z-10 flex h-full flex-col">
             <div className="px-8 py-10">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full border border-pink-400/30 flex items-center justify-center">
@@ -118,6 +119,9 @@ export default function Statistics() {
                 </button>
               </div>
             </nav>
+            <div className="p-4">
+              <UserProfileCard />
+            </div>
           </div>
         </aside>
 

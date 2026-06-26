@@ -237,15 +237,14 @@ export default function CorposCelestes() {
   const corposVisiveis = corpos.slice(0, pagina * registrosPorPagina);
 
   return (
-    <div className="min-h-screen bg-[#2a102f] p-8 text-white">
-      {/* CABEÇALHO */}
+    <div className="text-white">
+      <div className="mb-10 flex items-start justify-between">
+        <div><h1 className="text-5xl font-semibold">Corpos Celestes</h1>
 
-      <div className="mb-10">
-        <h1 className="text-4xl font-bold">Corpos Celestes</h1>
-
-        <p className="mt-3 text-gray-400">
-          Explore os corpos celestes cadastrados no sistema Lunaris.
-        </p>
+          <p className="mt-3 text-lg text-zinc-400">
+            Explore os corpos celestes cadastrados no sistema Lunaris.
+          </p>
+        </div>
       </div>
 
       {/* FILTROS */}

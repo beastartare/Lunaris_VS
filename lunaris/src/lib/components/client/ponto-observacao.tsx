@@ -131,14 +131,15 @@ export default function PontosObservacao() {
   const pontosVisiveis = pontos.slice(0, pagina * registrosPorPagina);
 
   return (
-    <div className="min-h-screen bg-[#2a102f] p-8 text-white">
-      {/* CABEÇALHO */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Pontos de Observação</h1>
+    <div className="text-white">
+      <div className="mb-10 flex items-start justify-between">
+        <div>
+          <h1 className="text-5xl font-semibold">Pontos de Observação</h1>
 
-        <p className="mt-2 text-gray-300">
-          Locais recomendados para observação astronômica.
-        </p>
+          <p className="mt-2 text-gray-300">
+            Locais recomendados para observação astronômica.
+          </p>
+        </div>
       </div>
 
       {/* PESQUISA */}

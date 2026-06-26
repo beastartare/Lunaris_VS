@@ -186,15 +186,15 @@ export default function Missoes() {
   const missoesVisiveis = missoes.slice(0, pagina * registrosPorPagina);
 
   return (
-    <div className="min-h-screen bg-[#2a102f] p-8 text-white">
-      {/* CABEÇALHO */}
-      <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+     <div className="text-white">
+      <div className="mb-10 flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Missões Espaciais</h1>
-          <p className="mt-2 text-gray-300">
-            Histórico e acompanhamento de missões espaciais.
-          </p>
-        </div>
+          <h1 className="text-5xl font-semibold">Missões Espaciais</h1>
+          
+            <p className="mt-3 text-lg text-zinc-400">
+              Histórico e acompanhamento de missões espaciais.
+            </p>
+          </div>
       </div>
 
       {/* FILTROS */}

@@ -66,13 +66,17 @@ export default function DashboardMeteorologico() {
     }));
 
   return (
-    <div className="min-h-screen bg-[#2a102f] p-8 text-white">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Dashboard Meteorológico</h1>
+    <div className="text-white">
+      <div className="mb-10 flex items-start justify-between">
+        <div>
+          <h1 className="text-5xl font-semibold">
+            Dashboard Meteorológico
+          </h1>
 
-        <p className="mt-2 text-gray-300">
-          Monitoramento de dados observacionais.
-        </p>
+          <p className="mt-3 text-lg text-zinc-400">
+            Monitoramento de dados observacionais.
+          </p>
+        </div>
       </div>
 
       {loading ? (

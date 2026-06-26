@@ -138,16 +138,21 @@ export default function MinhasBibliotecaCliente() {
   };
 
   return (
-    <div className="min-h-screen bg-[#2a102f] p-8 text-white">
-      {/* CABEÇALHO */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <BookMarked size={28} className="text-fuchsia-400" />
-          <h1 className="text-3xl font-bold">Minha Biblioteca</h1>
+    <div className="text-white">
+      <div className="mb-10 flex items-start justify-between">
+        <div>
+          <div className="mb-2 flex items-center gap-3">
+            <BookMarked size={28} className="text-fuchsia-400" />
+
+            <h1 className="text-5xl font-semibold">
+              Minha Biblioteca
+            </h1>
+          </div>
+
+          <p className="mt-3 text-lg text-zinc-400">
+            Todas as observações que você registrou no sistema.
+          </p>
         </div>
-        <p className="text-gray-300">
-          Todas as observações que você registrou no sistema.
-        </p>
       </div>
 
       {/* PESQUISA */}

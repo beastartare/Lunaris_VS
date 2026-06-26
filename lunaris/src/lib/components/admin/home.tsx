@@ -6,10 +6,10 @@ import {
   Sheet,
   ChartNoAxesCombined,
   Orbit,
-  LogOut,
 } from "lucide-react";
 import fundo from "../../../assets/fundo.png";
 import { useNavigate } from "react-router-dom";
+import UserProfileCard from "../../components/shared/UserProfileCard";
 
 export default function Home() {
   const [bancoVazio, setBancoVazio] = useState(false);
@@ -97,11 +97,6 @@ export default function Home() {
     }
   }
 
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    navigate("/");
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#18051f] via-[#2a0d3d] to-[#14031d] text-white overflow-hidden">
       {/* Glow Effects */}
@@ -122,7 +117,7 @@ export default function Home() {
             }}
           />
           <div className="absolute inset-0 bg-[#12051d]/70" />
-          <div className="relative z-10 flex flex-col h-full">
+          <div className="relative z-10 flex h-full flex-col">
             <div className="px-8 py-10">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full border border-pink-400/30 flex items-center justify-center">
@@ -158,6 +153,9 @@ export default function Home() {
                 </button>
               </div>
             </nav>
+            <div className="p-4">
+              <UserProfileCard />
+            </div>
           </div>
         </aside>
 
@@ -174,15 +172,7 @@ export default function Home() {
                 Gerenciamento do sistema Lunaris
               </p>
             </div>
-              <button
-              onClick={handleLogout}
-                className="flex items-center gap-3 px-5 py-3 rounded-xl text-red-300 hover:bg-red-500/10 transition border border-red-400/10"
-              >
-                <LogOut size={20} />
-                <span>Sair</span>
-              </button>
           </div>
-
           <div className="grid md:grid-cols-3 gap-6 mb-10">
             {/* Status */}
             <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6">

@@ -134,14 +134,15 @@ export default function Constelacoes() {
   );
 
   return (
-    <div className="min-h-screen bg-[#2a102f] p-8 text-white">
+    <div className="text-white">
       {/* CABEÇALHO */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Constelações</h1>
+      <div className="mb-10 flex items-start justify-between">
+        <div><h1 className="text-5xl font-semibold">Constelações</h1>
 
-        <p className="mt-2 text-gray-300">
-          Explore as principais constelações observadas no céu.
-        </p>
+          <p className="mt-3 text-lg text-zinc-400">
+            Explore as principais constelações observadas no céu.
+          </p>
+        </div>
       </div>
 
       {/* PESQUISA */}
