@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, Lock, User, UserPlus, EyeOff, ArrowLeft, Globe, CloudSun, Telescope } from "lucide-react";
+import { Mail, Lock, User, UserPlus, Eye, EyeOff, ArrowLeft, Globe, CloudSun, Telescope } from "lucide-react";
 import fundo from "../../assets/fundo.png";
 import { supabase } from "../supabase";
 
@@ -14,6 +14,8 @@ export default function Register() {
 
   // 0 = Visitante, 1 = Pesquisador Astronômico, 2 = Pesquisador Meteorológico
   const [tipoAcesso, setTipoAcesso] = useState<0 | 1 | 2>(0);
+  const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [mostrarConfirmarSenha, setMostrarConfirmarSenha] = useState(false);
 
   function handleChange(e) {
     setForm({
@@ -183,7 +185,7 @@ export default function Register() {
                   <Lock size={20} className="text-pink-200/70" />
 
                   <input
-                    type="password"
+                    type={mostrarSenha ? "text" : "password"}
                     name="senha"
                     placeholder="Digite sua senha"
                     value={form.senha}
@@ -191,7 +193,14 @@ export default function Register() {
                     className="w-full bg-transparent outline-none text-pink-50 placeholder:text-pink-100/40"
                   />
 
-                  <EyeOff size={18} className="text-pink-200/50" />
+                  <button
+                    type="button"
+                    onClick={() => setMostrarSenha((v) => !v)}
+                    className="text-pink-200/50 hover:text-pink-200 transition-colors"
+                    aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
+                  >
+                    {mostrarSenha ? <Eye size={18} /> : <EyeOff size={18} />}
+                  </button>
                 </div>
               </div>
 
@@ -205,13 +214,22 @@ export default function Register() {
                   <Lock size={20} className="text-pink-200/70" />
 
                   <input
-                    type="password"
+                    type={mostrarConfirmarSenha ? "text" : "password"}
                     name="confirmarSenha"
                     placeholder="Repita sua senha"
                     value={form.confirmarSenha}
                     onChange={handleChange}
                     className="w-full bg-transparent outline-none text-pink-50 placeholder:text-pink-100/40"
                   />
+
+                  <button
+                    type="button"
+                    onClick={() => setMostrarConfirmarSenha((v) => !v)}
+                    className="text-pink-200/50 hover:text-pink-200 transition-colors"
+                    aria-label={mostrarConfirmarSenha ? "Ocultar senha" : "Mostrar senha"}
+                  >
+                    {mostrarConfirmarSenha ? <Eye size={18} /> : <EyeOff size={18} />}
+                  </button>
                 </div>
               </div>
 
