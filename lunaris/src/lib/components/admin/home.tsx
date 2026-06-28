@@ -41,17 +41,23 @@ export default function Home() {
   }
 
   async function inicializarBanco() {
-    try {
-      await supabase.rpc("criar_banco");
-      await supabase.rpc("popular_banco");
-
-      alert("Banco inicializado com sucesso!");
-
-      verificarBanco();
-      await carregarEstatisticas();
-    } catch {
-      alert("Erro ao inicializar banco.");
+    const { error: erroCriar } = await supabase.rpc("criar_banco");
+    if (erroCriar) {
+      console.error("Erro ao criar banco:", erroCriar);
+      alert(`Erro ao criar tabelas: ${erroCriar.message}`);
+      return;
     }
+
+    const { error: erroPopular } = await supabase.rpc("popular_banco");
+    if (erroPopular) {
+      console.error("Erro ao popular banco:", erroPopular);
+      alert(`Tabelas criadas, mas falhou ao inserir dados: ${erroPopular.message}`);
+      return;
+    }
+
+    alert("Banco inicializado com sucesso!");
+    verificarBanco();
+    await carregarEstatisticas();
   }
 
   async function apagarBanco() {

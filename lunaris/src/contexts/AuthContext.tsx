@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
-import { supabase } from "../supabase";
+import { supabase } from "../lib/supabase";
 
 type Profile = {
   idusuario: number;

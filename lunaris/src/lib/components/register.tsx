@@ -59,21 +59,18 @@ export default function Register() {
           ? ultimoUsuario[0].idusuario + 1
           : 1;
 
-      // Insere o usuário
+      // Insere o usuário vinculando ao auth.users pelo UUID
       const { error: profileError } = await supabase
         .from("usuario")
         .insert({
           idusuario: novoId,
+          id: user.id,
           nome: form.nome,
           username: form.username,
           email: form.email,
-          tipo_acesso_usuario: 0,
+          tipo_acesso_usuario: tipoAcesso,
         });
 
-      if (profileError) {
-        console.error(profileError);
-        throw profileError;
-      }
       if (profileError) {
         console.error(profileError);
         throw profileError;

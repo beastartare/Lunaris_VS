@@ -35,7 +35,7 @@ export default function Statistics() {
     materiaisFavoritos,
     rankingFavoritos,
     eventosAstroCategoria,
-    variacaoTemperatura,
+    // variacaoTemperatura,
     loading,
   } = useStatistics();
 
@@ -463,7 +463,8 @@ export default function Statistics() {
             )}
           </div>
 
-          <div className="h-px bg-white/10 my-12" />
+          {/* Variação de Temperatura — desabilitado temporariamente */}
+          {/* <div className="h-px bg-white/10 my-12" />
 
           <div className="mb-10">
             <h3 className="text-xl mb-1">
@@ -479,85 +480,10 @@ export default function Statistics() {
               </div>
             ) : (
               <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                <div
-                  style={{
-                    height: Math.max(280, variacaoTemperatura.length * 52 + 80),
-                  }}
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      layout="vertical"
-                      data={variacaoTemperatura}
-                      margin={{ right: 24 }}
-                    >
-                      <XAxis
-                        type="number"
-                        unit="°C"
-                        tick={{ fill: "#a1a1aa", fontSize: 12 }}
-                      />
-                      <YAxis
-                        dataKey="ponto_observacao"
-                        type="category"
-                        width={150}
-                        tick={{ fill: "#a1a1aa", fontSize: 12 }}
-                      />
-                      <Tooltip
-                        {...tooltipProps}
-                        cursor={false}
-                        isAnimationActive={false}
-                        formatter={(value, name) => {
-                          const labels: Record<string, string> = {
-                            temp_minima: "Mínima (°C)",
-                            temp_maxima: "Máxima (°C)",
-                            variacao_temp: "Variação (°C)",
-                            temp_media: "Média (°C)",
-                          };
-                          const key = String(name);
-                          return [value, labels[key] ?? key];
-                        }}
-                      />
-                      <Legend
-                        formatter={(value) => {
-                          const labels: Record<string, string> = {
-                            temp_minima: "Mínima",
-                            temp_maxima: "Máxima",
-                            variacao_temp: "Variação",
-                            temp_media: "Média",
-                          };
-                          return labels[value] ?? value;
-                        }}
-                        wrapperStyle={{ fontSize: 12, color: "#a1a1aa" }}
-                      />
-                      <Bar
-                        dataKey="temp_minima"
-                        fill="#6366f1"
-                        radius={[0, 4, 4, 0]}
-                        isAnimationActive={false}
-                      />
-                      <Bar
-                        dataKey="temp_maxima"
-                        fill="#ec4899"
-                        radius={[0, 4, 4, 0]}
-                        isAnimationActive={false}
-                      />
-                      <Bar
-                        dataKey="variacao_temp"
-                        fill="#a855f7"
-                        radius={[0, 8, 8, 0]}
-                        isAnimationActive={false}
-                      />
-                      <Bar
-                        dataKey="temp_media"
-                        fill="#06b6d4"
-                        radius={[0, 4, 4, 0]}
-                        isAnimationActive={false}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
+                ...
               </div>
             )}
-          </div>
+          </div> */}
         </main>
       </div>
     </div>

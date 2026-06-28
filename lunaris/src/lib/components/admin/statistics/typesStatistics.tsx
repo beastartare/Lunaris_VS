@@ -45,12 +45,12 @@ export type EventoAstroCategoria = {
   ultimo_evento: string | null;
 };
 
-export type VariacaoTemperatura = {
-  ponto_observacao: string;
-  responsavel: string;
-  temp_minima: number;
-  temp_maxima: number;
-  variacao_temp: number;
-  temp_media: number;
-  total_medicoes: number;
-};
+// export type VariacaoTemperatura = {
+//   ponto_observacao: string;
+//   responsavel: string;
+//   temp_minima: number;
+//   temp_maxima: number;
+//   variacao_temp: number;
+//   temp_media: number;
+//   total_medicoes: number;
+// };

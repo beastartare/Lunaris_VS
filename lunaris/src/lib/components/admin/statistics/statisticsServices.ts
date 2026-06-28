@@ -11,11 +11,11 @@ import type {
 } from "./typesStatistics";
 
 type ConstelacaoRow = {
-  constelacao: { nome: string }[] | null;
+  constelacao: { nome: string } | null;
 };
 
 type MaterialRow = {
-  material: { titulo: string }[] | null;
+  material: { titulo: string } | null;
 };
 
 async function getCount(table: string): Promise<number> {
@@ -77,7 +77,7 @@ export async function getConstelacoesFavoritas(): Promise<ConstelacaoFavorita[]>
 
   const contador: Record<string, number> = {};
   (data as ConstelacaoRow[])?.forEach((item) => {
-    const nome = item.constelacao?.[0]?.nome;
+    const nome = item.constelacao?.nome;
     if (!nome) return;
     contador[nome] = (contador[nome] ?? 0) + 1;
   });
@@ -96,7 +96,7 @@ export async function getMateriaisFavoritos(): Promise<MaterialFavorito[]> {
 
   const contador: Record<string, number> = {};
   (data as MaterialRow[])?.forEach((item) => {
-    const titulo = item.material?.[0]?.titulo;
+    const titulo = item.material?.titulo;
     if (!titulo) return;
     contador[titulo] = (contador[titulo] ?? 0) + 1;
   });
@@ -119,11 +119,11 @@ export async function getEventosAstroCategoria(): Promise<EventoAstroCategoria[]
   return data ?? [];
 }
 
-export async function getVariacaoTemperatura(): Promise<VariacaoTemperatura[]> {
-  const { data, error } = await supabase.rpc("get_variacao_temperatura");
-  if (error) throw error;
-  return data ?? [];
-}
+// export async function getVariacaoTemperatura(): Promise<VariacaoTemperatura[]> {
+//   const { data, error } = await supabase.rpc("get_variacao_temperatura");
+//   if (error) throw error;
+//   return data ?? [];
+// }
 
 export async function getDashboardData() {
   const [
@@ -134,7 +134,7 @@ export async function getDashboardData() {
     materiaisFavoritos,
     rankingFavoritos,
     eventosAstroCategoria,
-    variacaoTemperatura,
+    // variacaoTemperatura,
   ] = await Promise.all([
     getStats(),
     getUsuariosPorTipo(),
@@ -143,7 +143,7 @@ export async function getDashboardData() {
     getMateriaisFavoritos(),
     getRankingFavoritos(),
     getEventosAstroCategoria(),
-    getVariacaoTemperatura(),
+    // getVariacaoTemperatura(),
   ]);
 
   return {
@@ -154,6 +154,6 @@ export async function getDashboardData() {
     materiaisFavoritos,
     rankingFavoritos,
     eventosAstroCategoria,
-    variacaoTemperatura,
+    // variacaoTemperatura,
   };
 }
