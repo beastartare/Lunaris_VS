@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, Lock, User, UserPlus, EyeOff, ArrowLeft, Globe, CloudSun, Telescope } from "lucide-react";
+import { Mail, Lock, User, UserPlus, EyeOff, ArrowLeft, Globe, CloudSun, Telescope, Eye } from "lucide-react";
 import fundo from "../../assets/fundo.png";
 import { supabase } from "../supabase";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +12,8 @@ export default function Register() {
     senha: "",
     confirmarSenha: "",
   });
+
+  const [mostrarSenha, setMostrarSenha] = useState(false);
 
   // 0 = Visitante, 1 = Pesquisador Astronômico, 2 = Pesquisador Meteorológico
   const [tipoAcesso, setTipoAcesso] = useState<0 | 1 | 2>(0);
@@ -184,7 +186,7 @@ export default function Register() {
                   <Lock size={20} className="text-pink-200/70" />
 
                   <input
-                    type="password"
+                    type={mostrarSenha ? "text" : "password"}
                     name="senha"
                     placeholder="Digite sua senha"
                     value={form.senha}
@@ -192,7 +194,13 @@ export default function Register() {
                     className="w-full bg-transparent outline-none text-pink-50 placeholder:text-pink-100/40"
                   />
 
-                  <EyeOff size={18} className="text-pink-200/50" />
+                  <button
+                    type="button"
+                    className="text-pink-200/60 hover:text-pink-200 transition"
+                    onClick={() => setMostrarSenha((prev) => !prev)}
+                  >
+                    {mostrarSenha ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
                 </div>
               </div>
 
