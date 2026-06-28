@@ -2,10 +2,23 @@ import { useState } from "react";
 import { supabase } from "../../../supabase";
 import { getIdusuario } from "../../../utils/getIdusuario";
 
+const CATEGORIAS_MATERIAL = [
+  "Artigo Científico",
+  "Livro",
+  "Apostila",
+  "Relatório",
+  "Apresentação",
+  "Vídeo Aula",
+  "Imagem",
+  "Dataset",
+  "Outro",
+];
+
 export default function FormMaterialEstudo() {
   const [titulo, setTitulo] = useState("");
   const [autor, setAutor] = useState("");
   const [descricao, setDescricao] = useState("");
+  const [categoriaMaterial, setCategoriaMaterial] = useState("");
 
   const [arquivo, setArquivo] = useState<File | null>(null);
 
@@ -54,6 +67,7 @@ export default function FormMaterialEstudo() {
         titulo,
         autor,
         descricao,
+        categoria_material: categoriaMaterial,
         tipo_arquivo: tipoArquivo,
         data_lancamento: new Date().toISOString(),
         arquivo: arquivoBase64,
@@ -66,6 +80,7 @@ export default function FormMaterialEstudo() {
       setTitulo("");
       setAutor("");
       setDescricao("");
+      setCategoriaMaterial("");
       setArquivo(null);
       setTipoArquivo("");
     } catch (err) {
@@ -103,6 +118,20 @@ export default function FormMaterialEstudo() {
           rows={4}
           className="w-full rounded-xl bg-[#3b1544] p-3"
         />
+
+        <select
+          value={categoriaMaterial}
+          onChange={(e) => setCategoriaMaterial(e.target.value)}
+          className="w-full rounded-xl bg-[#3b1544] p-3"
+        >
+          <option value="">Selecione a categoria do material</option>
+
+          {CATEGORIAS_MATERIAL.map((categoria) => (
+            <option key={categoria} value={categoria}>
+              {categoria}
+            </option>
+          ))}
+        </select>
 
         <div className="rounded-xl bg-[#3b1544] p-4">
           <p className="mb-3 font-semibold">Arquivo</p>

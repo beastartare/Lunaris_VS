@@ -61,8 +61,8 @@ BEGIN
   (1, 'Chuva de Meteoros', -5.4),
   (2, 'Eclipse Lunar', 12.8);
 
-  INSERT INTO MaterialEstudo (idMaterialEstudo, idUsuario, data_lancamento, tipo_arquivo, autor, descricao, titulo, arquivo) VALUES
-  (1, 1, '2026-01-01 00:00:00', 'PDF', 'Equipe Lunaris', 'Introdução à astronomia', 'Astronomia Básica', NULL);
+  INSERT INTO MaterialEstudo (idMaterialEstudo, idUsuario, data_lancamento, tipo_arquivo, autor, descricao, titulo, arquivo, categoria_mat_estudo) VALUES
+  (1, 1, '2026-01-01 00:00:00', 'PDF', 'Equipe Lunaris', 'Introdução à astronomia', 'Astronomia Básica', NULL, 'Artigo Científico');
 
   INSERT INTO FavoritoMaterialUsuario VALUES (1, 2);
   INSERT INTO FavoritoConstelacaoUsuario VALUES (2, 1);

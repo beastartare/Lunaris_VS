@@ -95,6 +95,7 @@ CREATE TABLE MaterialEstudo (
     descricao varchar(100),
     titulo varchar(100),
     arquivo BYTEA,
+    categoria_mat_estudo varchar(30),
     FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario)
 );
 

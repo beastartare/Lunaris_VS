@@ -11,6 +11,40 @@ interface CorpoCeleste {
   nome: string;
 }
 
+const CATEGORIAS_ASTRONOMICAS = [
+  "Eclipse Solar",
+  "Eclipse Lunar",
+  "Chuva de Meteoros",
+  "Conjunção Planetária",
+  "Oposição Planetária",
+  "Ocultação",
+  "Trânsito",
+  "Superlua",
+  "Aurora",
+  "Passagem de Cometa",
+  "Passagem de Asteroide",
+  "Outro",
+];
+
+const CATEGORIAS_METEOROLOGICAS = [
+  "Chuva",
+  "Tempestade",
+  "Tempestade Elétrica",
+  "Granizo",
+  "Neve",
+  "Nevoeiro",
+  "Ciclone",
+  "Furacão",
+  "Tornado",
+  "Frente Fria",
+  "Onda de Calor",
+  "Onda de Frio",
+  "Seca",
+  "Geada",
+  "Vendaval",
+  "Outro",
+];
+
 export default function FormEvento({ tipoFixo }: FormEventoProps = {}) {
   const [tipoEvento, setTipoEvento] = useState<"astronomico" | "meteorologico">(
     tipoFixo ?? "astronomico",
@@ -209,13 +243,19 @@ export default function FormEvento({ tipoFixo }: FormEventoProps = {}) {
 
         {tipoEvento === "astronomico" && (
           <>
-            <input
-              type="text"
-              placeholder="Categoria Astronômica"
+            <select
               value={categoriaAstro}
               onChange={(e) => setCategoriaAstro(e.target.value)}
               className="w-full rounded-xl bg-[#3b1544] p-3"
-            />
+            >
+              <option value="">Selecione a categoria astronômica</option>
+
+              {CATEGORIAS_ASTRONOMICAS.map((categoria) => (
+                <option key={categoria} value={categoria}>
+                  {categoria}
+                </option>
+              ))}
+            </select>
 
             <input
               type="number"
@@ -241,13 +281,19 @@ export default function FormEvento({ tipoFixo }: FormEventoProps = {}) {
         )}
 
         {tipoEvento === "meteorologico" && (
-          <input
-            type="text"
-            placeholder="Categoria Meteorológica"
+          <select
             value={categoriaMet}
-            onChange={(e) => setCategoriaMet(e.target.value)}
+            onChange={(e) => setCategoriaAstro(e.target.value)}
             className="w-full rounded-xl bg-[#3b1544] p-3"
-          />
+          >
+            <option value="">Selecione a categoria meteorológica</option>
+
+            {CATEGORIAS_METEOROLOGICAS.map((categoria) => (
+              <option key={categoria} value={categoria}>
+                {categoria}
+              </option>
+            ))}
+          </select>
         )}
 
         <input
