@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Mail, Lock, User, UserPlus, EyeOff, ArrowLeft, Globe, CloudSun, Telescope } from "lucide-react";
 import fundo from "../../assets/fundo.png";
 import { supabase } from "../supabase";
+import { useNavigate } from "react-router-dom";
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -30,60 +31,57 @@ export default function Register() {
       return;
     }
 
-    console.log(form);
-
-    // cadastrar usuário aqui
     try {
+      // Cria usuário no Auth
       const { data, error } = await supabase.auth.signUp({
         email: form.email,
         password: form.senha,
       });
+
       if (error) throw error;
 
       const user = data.user;
 
-      if (!user) throw new Error("Usuário não encontrado após cadastro.");
+      if (!user) {
+        throw new Error("Usuário não encontrado após cadastro.");
+      }
 
-      // Busca o maior id existente
-      const { data: ultimoUsuario, error: ultimoErro } = await supabase
-        .from("usuario")
-        .select("idusuario")
-        .order("idusuario", { ascending: false })
-        .limit(1);
-
-      if (ultimoErro) throw ultimoErro;
-
-      // Define o próximo ID
-      const novoId =
-        ultimoUsuario && ultimoUsuario.length > 0
-          ? ultimoUsuario[0].idusuario + 1
-          : 1;
-
-      // Insere o usuário
+      // Cria registro na tabela usuario
       const { error: profileError } = await supabase
         .from("usuario")
         .insert({
-          idusuario: novoId,
+          id: user.id, // UUID do auth.users
           nome: form.nome,
           username: form.username,
           email: form.email,
-          tipo_acesso_usuario: 0,
+          tipo_acesso_usuario: tipoAcesso,
         });
 
-      if (profileError) {
-        console.error(profileError);
-        throw profileError;
-      }
-      if (profileError) {
-        console.error(profileError);
-        throw profileError;
-      }
+      if (profileError) throw profileError;
 
-      alert("Conta criada com sucesso");
-    } catch (error) {
-      alert(error.message);
+      alert("Conta criada com sucesso!");
+
+      if (profileError) throw profileError;
+
+      setForm({
+        nome: "",
+        username: "",
+        email: "",
+        senha: "",
+        confirmarSenha: "",
+      });
+
+      setTipoAcesso(0);
+
+      alert("Faça login para acessar a plataforma.");
+
+      navigate("/");
+    } catch (error: any) {
+      console.error(error);
+      alert(error.message || "Erro ao criar conta.");
     }
   }
+  const navigate = useNavigate();
 
   return (
     <div
@@ -265,6 +263,7 @@ export default function Register() {
                 <button
                   type="button"
                   className="ml-2 text-pink-200 hover:text-pink-100 font-medium"
+                  onClick={() => navigate("/")}
                 >
                   Entrar
                 </button>
