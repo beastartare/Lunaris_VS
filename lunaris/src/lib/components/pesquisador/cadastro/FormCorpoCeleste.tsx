@@ -45,7 +45,7 @@ export default function FormCorpoCeleste() {
 
       const { error } = await supabase.from("corpoceleste").insert({
         idusuario,
-        idconstelacao: Number(idConstelacao),
+        idconstelacao: idConstelacao ? Number(idConstelacao) : null,
         nome,
         descricao,
         distancia: Number(distancia),

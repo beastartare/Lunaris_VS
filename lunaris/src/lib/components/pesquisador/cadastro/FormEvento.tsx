@@ -11,44 +11,10 @@ interface CorpoCeleste {
   nome: string;
 }
 
-const CATEGORIAS_ASTRONOMICAS = [
-  "Eclipse Solar",
-  "Eclipse Lunar",
-  "Chuva de Meteoros",
-  "Conjunção Planetária",
-  "Oposição Planetária",
-  "Ocultação",
-  "Trânsito",
-  "Superlua",
-  "Aurora",
-  "Passagem de Cometa",
-  "Passagem de Asteroide",
-  "Outro",
-];
-
-const CATEGORIAS_METEOROLOGICAS = [
-  "Chuva",
-  "Tempestade",
-  "Tempestade Elétrica",
-  "Granizo",
-  "Neve",
-  "Nevoeiro",
-  "Ciclone",
-  "Furacão",
-  "Tornado",
-  "Frente Fria",
-  "Onda de Calor",
-  "Onda de Frio",
-  "Seca",
-  "Geada",
-  "Vendaval",
-  "Outro",
-];
-
 export default function FormEvento({ tipoFixo }: FormEventoProps = {}) {
-  const [tipoEvento, setTipoEvento] = useState<"astronomico" | "meteorologico">(
-    tipoFixo ?? "astronomico",
-  );
+  const [tipoEvento, setTipoEvento] = useState<
+    "astronomico" | "meteorologico"
+  >(tipoFixo ?? "astronomico");
 
   const [descricao, setDescricao] = useState("");
   const [latitude, setLatitude] = useState("");
@@ -56,46 +22,43 @@ export default function FormEvento({ tipoFixo }: FormEventoProps = {}) {
   const [dataHora, setDataHora] = useState("");
 
   const [categoriaAstro, setCategoriaAstro] = useState("");
-
   const [declinacao, setDeclinacao] = useState("");
-
   const [categoriaMet, setCategoriaMet] = useState("");
 
   const [imagem, setImagem] = useState<File | null>(null);
 
   const [corposCelestes, setCorposCelestes] = useState<CorpoCeleste[]>([]);
-  const [idCorpoCeleste, setIdCorpoCeleste] = useState("");
+  const [idsCorposCelestes, setIdsCorposCelestes] = useState<number[]>([]);
 
-  const buscarCorposCelestes = async () => {
-    try {
+  const toggleCorpoCeleste = (id: number) => {
+    setIdsCorposCelestes((prev) =>
+      prev.includes(id)
+        ? prev.filter((item) => item !== id)
+        : [...prev, id]
+    );
+  };
+
+  useEffect(() => {
+    const buscarCorposCelestes = async () => {
       const { data, error } = await supabase
         .from("corpoceleste")
         .select("idcorpoceleste, nome")
         .order("nome");
-      if (error) throw error;
-      setCorposCelestes(data || []);
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
-  useEffect(() => {
+      if (error) console.error(error);
+      else setCorposCelestes(data || []);
+    };
+
     buscarCorposCelestes();
   }, []);
 
   const salvarEvento = async () => {
     try {
-      if (tipoEvento === "astronomico" && !idCorpoCeleste) {
-        alert("Por favor, selecione um corpo celeste para o evento astronômico.");
-        return;
-      }
-
       const {
         data: { user },
-        error: userError,
       } = await supabase.auth.getUser();
 
-      if (userError || !user) {
+      if (!user) {
         alert("Usuário não autenticado.");
         return;
       }
@@ -142,13 +105,21 @@ export default function FormEvento({ tipoFixo }: FormEventoProps = {}) {
 
         if (error) throw error;
 
-        const { error: relError } = await supabase.from("corpocelesteevento").insert({
-          idcorpoceleste: Number(idCorpoCeleste),
-          idevento: eventoData.idevento,
-        });
+        if (idsCorposCelestes.length > 0) {
+          const relacoes = idsCorposCelestes.map((id) => ({
+            idcorpoceleste: id,
+            idevento: eventoData.idevento,
+          }));
 
-        if (relError) throw relError;
-      } else {
+          const { error: relError } = await supabase
+            .from("corpocelesteevento")
+            .insert(relacoes);
+
+          if (relError) throw relError;
+        }
+      }
+
+      else {
         const { error } = await supabase.from("eventometereologico").insert({
           idevento: eventoData.idevento,
           categoria_evento_met: categoriaMet,
@@ -159,6 +130,7 @@ export default function FormEvento({ tipoFixo }: FormEventoProps = {}) {
 
       alert("Evento cadastrado com sucesso!");
 
+      // reset
       setDescricao("");
       setLatitude("");
       setLongitude("");
@@ -166,7 +138,7 @@ export default function FormEvento({ tipoFixo }: FormEventoProps = {}) {
       setCategoriaAstro("");
       setCategoriaMet("");
       setDeclinacao("");
-      setIdCorpoCeleste("");
+      setIdsCorposCelestes([]);
       setImagem(null);
     } catch (err) {
       console.error(err);
@@ -176,38 +148,7 @@ export default function FormEvento({ tipoFixo }: FormEventoProps = {}) {
 
   return (
     <div className="max-w-3xl">
-      <h2 className="mb-6 text-3xl font-bold">Cadastro de Evento </h2>
-
-      {/* Seletor de tipo — oculto se tipoFixo foi definido */}
-      {!tipoFixo && (
-        <div className="mb-6 flex gap-3">
-          <button
-            onClick={() => setTipoEvento("astronomico")}
-            className={`rounded-xl px-5 py-3 ${
-              tipoEvento === "astronomico" ? "bg-fuchsia-700" : "bg-[#3b1544]"
-            }`}
-          >
-            Astronômico
-          </button>
-
-          <button
-            onClick={() => setTipoEvento("meteorologico")}
-            className={`rounded-xl px-5 py-3 ${
-              tipoEvento === "meteorologico" ? "bg-fuchsia-700" : "bg-[#3b1544]"
-            }`}
-          >
-            Meteorológico
-          </button>
-        </div>
-      )}
-
-      {tipoFixo && (
-        <div className="mb-6">
-          <span className="inline-block rounded-xl bg-fuchsia-900/50 px-4 py-2 text-sm font-medium text-fuchsia-300">
-            Tipo: {tipoFixo === "astronomico" ? "Astronômico" : "Meteorológico"}
-          </span>
-        </div>
-      )}
+      <h2 className="mb-6 text-3xl font-bold">Cadastro de Evento</h2>
 
       <div className="space-y-4">
         <input
@@ -241,6 +182,7 @@ export default function FormEvento({ tipoFixo }: FormEventoProps = {}) {
           className="w-full rounded-xl bg-[#3b1544] p-3"
         />
 
+        {/* ASTRONÔMICO */}
         {tipoEvento === "astronomico" && (
           <>
             <select
@@ -248,12 +190,15 @@ export default function FormEvento({ tipoFixo }: FormEventoProps = {}) {
               onChange={(e) => setCategoriaAstro(e.target.value)}
               className="w-full rounded-xl bg-[#3b1544] p-3"
             >
-              <option value="">Selecione a categoria astronômica</option>
-
-              {CATEGORIAS_ASTRONOMICAS.map((categoria) => (
-                <option key={categoria} value={categoria}>
-                  {categoria}
-                </option>
+              <option value="">Categoria astronômica</option>
+              {[
+                "Eclipse Solar",
+                "Eclipse Lunar",
+                "Chuva de Meteoros",
+                "Conjunção Planetária",
+                "Outro",
+              ].map((c) => (
+                <option key={c}>{c}</option>
               ))}
             </select>
 
@@ -265,33 +210,49 @@ export default function FormEvento({ tipoFixo }: FormEventoProps = {}) {
               className="w-full rounded-xl bg-[#3b1544] p-3"
             />
 
-            <select
-              value={idCorpoCeleste}
-              onChange={(e) => setIdCorpoCeleste(e.target.value)}
-              className="w-full rounded-xl bg-[#3b1544] p-3"
-            >
-              <option value="">Selecione o Corpo Celeste associado</option>
+            {/* MULTI SELEÇÃO */}
+            <div className="w-full rounded-xl bg-[#3b1544] p-3 space-y-2">
+              <p className="text-sm text-zinc-300">
+                Corpos Celestes
+              </p>
+
               {corposCelestes.map((corpo) => (
-                <option key={corpo.idcorpoceleste} value={corpo.idcorpoceleste}>
+                <label
+                  key={corpo.idcorpoceleste}
+                  className="flex items-center gap-2"
+                >
+                  <input
+                    type="checkbox"
+                    checked={idsCorposCelestes.includes(
+                      corpo.idcorpoceleste
+                    )}
+                    onChange={() =>
+                      toggleCorpoCeleste(corpo.idcorpoceleste)
+                    }
+                  />
                   {corpo.nome}
-                </option>
+                </label>
               ))}
-            </select>
+            </div>
           </>
         )}
 
+        {/* METEOROLÓGICO */}
         {tipoEvento === "meteorologico" && (
           <select
             value={categoriaMet}
-            onChange={(e) => setCategoriaAstro(e.target.value)}
+            onChange={(e) => setCategoriaMet(e.target.value)}
             className="w-full rounded-xl bg-[#3b1544] p-3"
           >
-            <option value="">Selecione a categoria meteorológica</option>
-
-            {CATEGORIAS_METEOROLOGICAS.map((categoria) => (
-              <option key={categoria} value={categoria}>
-                {categoria}
-              </option>
+            <option value="">Categoria meteorológica</option>
+            {[
+              "Chuva",
+              "Tempestade",
+              "Granizo",
+              "Nevoeiro",
+              "Outro",
+            ].map((c) => (
+              <option key={c}>{c}</option>
             ))}
           </select>
         )}
