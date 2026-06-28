@@ -7,6 +7,7 @@ import type {
   EventoAstroCategoria,
   EventosPorPesquisador,
   DadosMeteorologicosPorPesquisador,
+  EventoAstroCatCC,
 } from "./typesStatistics";
 
 async function getCount(table: string): Promise<number> {
@@ -88,6 +89,14 @@ export async function getDadosMetPorPesquisador(): Promise<DadosMeteorologicosPo
   return data ?? [];
 }
 
+export async function getEventoAstroCatCC(): Promise<EventoAstroCatCC[]> {
+  const { data, error } = await supabase.rpc(
+    "obter_estatisticas_eventos_astronomicos"
+  );
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function getDashboardData() {
   const [
     stats,
@@ -97,6 +106,7 @@ export async function getDashboardData() {
     eventosAstroCategoria,
     eventosPorPesquisador,
     dadosMetPorPesquisador,
+    eventostroCatCorpoCel,
   ] = await Promise.all([
     getStats(),
     getUsuariosPorTipo(),
@@ -105,6 +115,7 @@ export async function getDashboardData() {
     getEventosAstroCategoria(),
     getEventosPorPesquisador(),
     getDadosMetPorPesquisador(),
+    getEventoAstroCatCC(),
   ]);
 
   return {
@@ -115,5 +126,6 @@ export async function getDashboardData() {
     eventosAstroCategoria,
     eventosPorPesquisador,
     dadosMetPorPesquisador,
+    eventostroCatCorpoCel,
   };
 }

@@ -63,3 +63,15 @@ GROUP BY
     usuario.nome
 ORDER BY total_favoritos DESC
 LIMIT 10;
+
+SELECT
+    ea.categoria_evento_astro AS categoria,
+    COUNT(DISTINCT ea.idEvento) AS total_eventos,
+    COUNT(DISTINCT cce.idCorpoCeleste) AS corpos_celestes_relacionados
+FROM EventoAstronomico ea
+LEFT JOIN CorpoCelesteEvento cce
+    ON cce.idEvento = ea.idEvento
+LEFT JOIN CorpoCeleste cc
+    ON cc.idCorpoCeleste = cce.idCorpoCeleste
+GROUP BY ea.categoria_evento_astro
+ORDER BY total_eventos DESC;

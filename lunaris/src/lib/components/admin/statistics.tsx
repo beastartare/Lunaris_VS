@@ -18,6 +18,7 @@ import {
   XAxis,
   YAxis,
   Legend,
+  CartesianGrid,
 } from "recharts";
 
 import { useStatistics } from "./statistics/useStatistics";
@@ -33,6 +34,7 @@ export default function Statistics() {
     eventosAstroCategoria,
     eventosPorPesquisador,
     dadosMetPorPesquisador,
+    eventostroCatCorpoCel,
     loading,
   } = useStatistics();
 
@@ -384,7 +386,8 @@ export default function Statistics() {
           </div>
 
           <div className="h-px bg-white/10 my-12" />
-            <div className="mb-10">
+
+          <div className="mb-10">
             <h3 className="text-xl mb-1">
               Eventos Registrados por Pesquisador
             </h3>
@@ -429,6 +432,7 @@ export default function Statistics() {
               </div>
             )}
           </div>
+
           <div className="h-px bg-white/10 my-12" />
 
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-10">
@@ -470,13 +474,78 @@ export default function Statistics() {
                     <Legend />
 
                     {pesquisadores.map((pesquisador, index) => (
-                      <Bar
-                        key={pesquisador}
-                        dataKey={pesquisador}
-                        name={pesquisador}
-                        fill={cores[index % cores.length]}
-                      />
-                    ))}
+                    <Bar
+                      key={pesquisador}
+                      dataKey={pesquisador}
+                      name={pesquisador}
+                      fill={cores[index % cores.length]}
+                      stackId="total"
+                    />
+                  ))}
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+
+          <div className="h-px bg-white/10 my-12" />
+
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-10">
+            <h3 className="text-xl mb-6">
+              Eventos Astronômicos por Categoria
+            </h3>
+
+            {eventostroCatCorpoCel.length === 0 ? (
+              <div className="h-[400px] flex items-center justify-center text-zinc-500">
+                Sem informações
+              </div>
+            ) : (
+              <div className="h-[450px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={eventostroCatCorpoCel}
+                    margin={{
+                      top: 20,
+                      right: 30,
+                      left: 20,
+                      bottom: 50,
+                    }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      opacity={0.2}
+                    />
+
+                    <XAxis
+                      dataKey="categoria"
+                      angle={-20}
+                      textAnchor="end"
+                      interval={0}
+                    />
+
+                    <YAxis allowDecimals={false} />
+
+                    <Tooltip
+                      {...tooltipProps}
+                      cursor={false}
+                      isAnimationActive={false}
+                    />
+
+                    <Legend />
+
+                    <Bar
+                      dataKey="total_eventos"
+                      name="Eventos"
+                      fill="#8b5cf6"
+                      radius={[4, 4, 0, 0]}
+                    />
+
+                    <Bar
+                      dataKey="corpos_celestes_relacionados"
+                      name="Corpos Celestes"
+                      fill="#ec4899"
+                      radius={[4, 4, 0, 0]}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

@@ -55,3 +55,9 @@ export type VariacaoTemperatura = {
   temp_media: number;
   total_medicoes: number;
 };
+
+export type EventoAstroCatCC = {
+  categoria: string;
+  total_eventos: number;
+  corpos_celestes_relacionados: number;
+}

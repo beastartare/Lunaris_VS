@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../../supabase";
+import { getIdusuario } from "../../../utils/getIdusuario";
 
 interface PontoObservacao {
   idpontoobs: number;
@@ -42,21 +43,31 @@ export default function FormMeteorologia() {
 
   const salvarDados = async () => {
     try {
-      const { error } = await supabase.from("dadometereologico").insert({
-        idpontoobs: Number(idPontoObs),
+      const idUsuario = await getIdusuario();
 
-        temperatura: Number(temperatura),
+      if (!idUsuario) {
+        throw new Error("Usuário não autenticado.");
+      }
 
-        umidade: Number(umidade),
+      const { error } = await supabase
+        .from("dadometereologico")
+        .insert({
+          idusuario: idUsuario,
 
-        indiceuv: Number(indiceUV),
+          idpontoobs: Number(idPontoObs),
 
-        dir_vento: dirVento,
+          temperatura: Number(temperatura),
 
-        vel_vento: Number(velVento),
+          umidade: Number(umidade),
 
-        datahora: new Date().toISOString(),
-      });
+          indiceuv: Number(indiceUV),
+
+          dir_vento: dirVento,
+
+          vel_vento: Number(velVento),
+
+          datahora: new Date().toISOString(),
+        });
 
       if (error) throw error;
 
@@ -70,7 +81,6 @@ export default function FormMeteorologia() {
       setVelVento("");
     } catch (err) {
       console.error(err);
-
       alert("Erro ao cadastrar dados meteorológicos.");
     }
   };
