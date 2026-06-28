@@ -10,6 +10,12 @@ export type EventosPorPesquisador = {
   total_eventos: number;
 };
 
+export type DadosMeteorologicosPorPesquisador = {
+  pesquisador: string;
+  ponto_observacao: string;
+  total_medicoes: number;
+};
+
 export type UsuarioTipo = {
   name: string;
   value: number;
@@ -17,17 +23,7 @@ export type UsuarioTipo = {
 
 export type EventoCategoria = {
   categoria: string;
-  Quantidade: number;
-};
-
-export type ConstelacaoFavorita = {
-  nome: string;
-  favoritos: number;
-};
-
-export type MaterialFavorito = {
-  titulo: string;
-  favoritos: number;
+  quantidade: number;
 };
 
 export type RankingFavoritos = {

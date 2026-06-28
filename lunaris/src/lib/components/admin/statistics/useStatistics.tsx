@@ -5,22 +5,20 @@ import type {
   Stats,
   UsuarioTipo,
   EventoCategoria,
-  ConstelacaoFavorita,
-  MaterialFavorito,
   RankingFavoritos,
   EventoAstroCategoria,
   EventosPorPesquisador,
+  DadosMeteorologicosPorPesquisador,
 } from "./typesStatistics";
 
 type DashboardData = {
   stats: Stats;
   usuariosPorTipo: UsuarioTipo[];
   eventosCategoria: EventoCategoria[];
-  constelacoesFavoritas: ConstelacaoFavorita[];
-  materiaisFavoritos: MaterialFavorito[];
   rankingFavoritos: RankingFavoritos[];
   eventosAstroCategoria: EventoAstroCategoria[];
   eventosPorPesquisador: EventosPorPesquisador[];
+  dadosMetPorPesquisador: DadosMeteorologicosPorPesquisador[]; 
 };
 
 export function useStatistics() {
@@ -33,11 +31,10 @@ export function useStatistics() {
     },
     usuariosPorTipo: [],
     eventosCategoria: [],
-    constelacoesFavoritas: [],
-    materiaisFavoritos: [],
     rankingFavoritos: [],
     eventosAstroCategoria: [],
     eventosPorPesquisador: [],
+    dadosMetPorPesquisador: [],
   });
 
   const [loading, setLoading] = useState(true);

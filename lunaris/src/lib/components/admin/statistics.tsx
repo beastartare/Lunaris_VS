@@ -29,13 +29,47 @@ export default function Statistics() {
     stats,
     usuariosPorTipo,
     eventosCategoria,
-    constelacoesFavoritas,
-    materiaisFavoritos,
     rankingFavoritos,
     eventosAstroCategoria,
     eventosPorPesquisador,
+    dadosMetPorPesquisador,
     loading,
   } = useStatistics();
+
+  const dadosGrafico = dadosMetPorPesquisador.reduce(
+    (acc, item) => {
+      let ponto = acc.find(
+        p => p.ponto_observacao === item.ponto_observacao
+      );
+
+      if (!ponto) {
+        ponto = {
+          ponto_observacao: item.ponto_observacao,
+        };
+        acc.push(ponto);
+      }
+
+      ponto[item.pesquisador] = item.total_medicoes;
+
+      return acc;
+    },
+    [] as any[]
+  );
+
+  const cores = [
+    "#ec4899",
+    "#a855f7",
+    "#6366f1",
+    "#22c55e",
+    "#f59e0b",
+    "#06b6d4",
+  ];
+
+  const pesquisadores = [
+    ...new Set(
+      dadosMetPorPesquisador.map((d) => d.pesquisador)
+    ),
+  ];
 
   const tooltipProps = {
     contentStyle: {
@@ -165,77 +199,6 @@ export default function Statistics() {
 
           <div className="h-px bg-white/10 my-12" />
 
-          {/* Rankings de favoritos e materiais */}
-          <div className="grid xl:grid-cols-2 gap-6">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-              <h3 className="text-xl mb-6">Constelações Mais Favoritadas</h3>
-              {constelacoesFavoritas.length === 0 ? (
-                <div className="h-[320px] flex items-center justify-center text-zinc-500">
-                  Sem informações
-                </div>
-              ) : (
-                <div className="h-[320px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart layout="vertical" data={constelacoesFavoritas}>
-                      <XAxis type="number" hide />
-                      <YAxis dataKey="nome" type="category" width={120} />
-                      <Tooltip
-                        {...tooltipProps}
-                        cursor={false}
-                        isAnimationActive={false}
-                      />
-                      <Bar
-                        dataKey="favoritos"
-                        fill="#ec4899"
-                        radius={[0, 8, 8, 0]}
-                        activeBar={false}
-                        isAnimationActive={false}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
-            </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-              <h3 className="text-xl mb-6">Materiais Mais Favoritados</h3>
-              {materiaisFavoritos.length === 0 ? (
-                <div className="h-[320px] flex items-center justify-center text-zinc-500">
-                  Sem informações
-                </div>
-              ) : (
-                <div className="h-[320px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart layout="vertical" data={materiaisFavoritos}>
-                      <XAxis type="number" hide />
-                      <YAxis
-                        allowDecimals={false}
-                        domain={[0, "dataMax"]}
-                        dataKey="titulo"
-                        type="category"
-                        width={120}
-                      />
-                      <Tooltip
-                        {...tooltipProps}
-                        cursor={false}
-                        isAnimationActive={false}
-                      />
-                      <Bar
-                        dataKey="favoritos"
-                        fill="#ec4899"
-                        radius={[0, 8, 8, 0]}
-                        activeBar={false}
-                        isAnimationActive={false}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="h-px bg-white/10 my-12" />
-
           {/* Distribuição de usuários e eventos por categoria */}
           <div className="grid xl:grid-cols-2 gap-6 mb-10">
             <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
@@ -272,7 +235,7 @@ export default function Statistics() {
             </div>
 
             <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-              <h3 className="text-xl mb-6">Eventos por Categoria</h3>
+              <h3 className="text-xl mb-6">Quantidade de Eventos Astronômicos e Meteorológicos</h3>
               {eventosCategoria.length === 0 ? (
                 <div className="h-[320px] flex items-center justify-center text-zinc-500">
                   Sem informações
@@ -288,7 +251,7 @@ export default function Statistics() {
                         cursor={false}
                         isAnimationActive={false}
                       />
-                      <Bar dataKey="Quantidade" radius={[8, 8, 0, 0]} isAnimationActive={false}>
+                      <Bar dataKey="quantidade" radius={[8, 8, 0, 0]} isAnimationActive={false}>
                         <Cell fill="#a855f7" />
                         <Cell fill="#6366f1" />
                       </Bar>
@@ -408,7 +371,7 @@ export default function Statistics() {
 
                       <Bar
                         dataKey="total_eventos"
-                        fill="#a855f7"
+                        fill="#6366f1"
                         radius={[8, 8, 0, 0]}
                         activeBar={false}
                         isAnimationActive={false}
@@ -463,6 +426,59 @@ export default function Statistics() {
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
+              </div>
+            )}
+          </div>
+          <div className="h-px bg-white/10 my-12" />
+
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-10">
+            <h3 className="text-xl mb-6">
+              Dados Meteorológicos por Pesquisador e Ponto
+            </h3>
+
+            {dadosMetPorPesquisador.length === 0 ? (
+              <div className="h-[400px] flex items-center justify-center text-zinc-500">
+                Sem informações
+              </div>
+            ) : (
+              <div className="h-[450px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={dadosGrafico}
+                    margin={{
+                      top: 20,
+                      right: 30,
+                      left: 20,
+                      bottom: 60,
+                    }}
+                  >
+                    <XAxis
+                      dataKey="ponto_observacao"
+                      interval={0}
+                      angle={-20}
+                      textAnchor="end"
+                    />
+
+                    <YAxis allowDecimals={false} />
+
+                    <Tooltip
+                      {...tooltipProps}
+                      cursor={false}
+                      isAnimationActive={false}
+                    />
+
+                    <Legend />
+
+                    {pesquisadores.map((pesquisador, index) => (
+                      <Bar
+                        key={pesquisador}
+                        dataKey={pesquisador}
+                        name={pesquisador}
+                        fill={cores[index % cores.length]}
+                      />
+                    ))}
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             )}
           </div>

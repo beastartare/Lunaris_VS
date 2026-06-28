@@ -3,20 +3,11 @@ import type {
   Stats,
   UsuarioTipo,
   EventoCategoria,
-  ConstelacaoFavorita,
-  MaterialFavorito,
   RankingFavoritos,
   EventoAstroCategoria,
   EventosPorPesquisador,
+  DadosMeteorologicosPorPesquisador,
 } from "./typesStatistics";
-
-type ConstelacaoRow = {
-  constelacao: { nome: string }[] | null;
-};
-
-type MaterialRow = {
-  material: { titulo: string }[] | null;
-};
 
 async function getCount(table: string): Promise<number> {
   const { count, error } = await supabase
@@ -64,47 +55,9 @@ export async function getEventosCategoria(): Promise<EventoCategoria[]> {
     getCount("eventometereologico"),
   ]);
   return [
-    { categoria: "Astronômico", Quantidade: astronomicos },
-    { categoria: "Meteorológico", Quantidade: meteorologicos },
+    { categoria: "Astronômico", quantidade: astronomicos },
+    { categoria: "Meteorológico", quantidade: meteorologicos },
   ];
-}
-
-export async function getConstelacoesFavoritas(): Promise<ConstelacaoFavorita[]> {
-  const { data, error } = await supabase
-    .from("favoritoconstelacaousuario")
-    .select(`constelacao:idconstelacao ( nome )`);
-  if (error) throw error;
-
-  const contador: Record<string, number> = {};
-  (data as ConstelacaoRow[])?.forEach((item) => {
-    const nome = item.constelacao?.[0]?.nome;
-    if (!nome) return;
-    contador[nome] = (contador[nome] ?? 0) + 1;
-  });
-
-  return Object.entries(contador)
-    .map(([nome, favoritos]) => ({ nome, favoritos }))
-    .sort((a, b) => b.favoritos - a.favoritos)
-    .slice(0, 5);
-}
-
-export async function getMateriaisFavoritos(): Promise<MaterialFavorito[]> {
-  const { data, error } = await supabase
-    .from("favoritomaterialusuario")
-    .select(`material:idmaterialestudo ( titulo )`);
-  if (error) throw error;
-
-  const contador: Record<string, number> = {};
-  (data as MaterialRow[])?.forEach((item) => {
-    const titulo = item.material?.[0]?.titulo;
-    if (!titulo) return;
-    contador[titulo] = (contador[titulo] ?? 0) + 1;
-  });
-
-  return Object.entries(contador)
-    .map(([titulo, favoritos]) => ({ titulo, favoritos }))
-    .sort((a, b) => b.favoritos - a.favoritos)
-    .slice(0, 5);
 }
 
 export async function getRankingFavoritos(): Promise<RankingFavoritos[]> {
@@ -127,35 +80,40 @@ export async function getEventosPorPesquisador(): Promise<EventosPorPesquisador[
   return data ?? [];
 }
 
+export async function getDadosMetPorPesquisador(): Promise<DadosMeteorologicosPorPesquisador[]> {
+  const { data, error } = await supabase.rpc(
+    "obter_dados_meteorologicos_por_pesquisador"
+  );
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function getDashboardData() {
   const [
     stats,
     usuariosPorTipo,
     eventosCategoria,
-    constelacoesFavoritas,
-    materiaisFavoritos,
     rankingFavoritos,
     eventosAstroCategoria,
     eventosPorPesquisador,
+    dadosMetPorPesquisador,
   ] = await Promise.all([
     getStats(),
     getUsuariosPorTipo(),
     getEventosCategoria(),
-    getConstelacoesFavoritas(),
-    getMateriaisFavoritos(),
     getRankingFavoritos(),
     getEventosAstroCategoria(),
-    getEventosPorPesquisador()
+    getEventosPorPesquisador(),
+    getDadosMetPorPesquisador(),
   ]);
 
   return {
     stats,
     usuariosPorTipo,
     eventosCategoria,
-    constelacoesFavoritas,
-    materiaisFavoritos,
     rankingFavoritos,
     eventosAstroCategoria,
     eventosPorPesquisador,
+    dadosMetPorPesquisador,
   };
 }
