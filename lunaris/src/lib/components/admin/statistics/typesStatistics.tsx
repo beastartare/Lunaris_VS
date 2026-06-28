@@ -56,8 +56,8 @@ export type VariacaoTemperatura = {
   total_medicoes: number;
 };
 
-export type EventoAstroCatCC = {
-  categoria: string;
-  total_eventos: number;
-  corpos_celestes_relacionados: number;
+export type StatsEventosAstro = {
+  categoria: string,
+  total_eventos: number,
+  corpos_celestes : number,
 }

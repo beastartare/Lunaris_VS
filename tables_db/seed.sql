@@ -3,10 +3,12 @@ DECLARE
   id_admin UUID;
   id_bea   UUID;
   id_rafa  UUID;
+  id_visitante UUID;
 BEGIN
   id_admin := gen_random_uuid();
   id_bea   := gen_random_uuid();
   id_rafa  := gen_random_uuid();
+  id_visitante := gen_random_uuid();
 
   INSERT INTO auth.users (
     id, instance_id, email, encrypted_password, email_confirmed_at,
@@ -25,12 +27,17 @@ BEGIN
   (id_rafa, '00000000-0000-0000-0000-000000000000', 'rafasavaris24@gmail.com',
    extensions.crypt('123456', extensions.gen_salt('bf')),
    now(), 'authenticated', 'authenticated', now(), now(),
+   '{"provider":"email","providers":["email"]}', '{}', false, '', '', '', ''),
+  (id_visitante, '00000000-0000-0000-0000-000000000000', 'visitante@lunaris.com',
+   extensions.crypt('123456', extensions.gen_salt('bf')),
+   now(), 'authenticated', 'authenticated', now(), now(),
    '{"provider":"email","providers":["email"]}', '{}', false, '', '', '', '');
 
   INSERT INTO Usuario (idUsuario, id, nome, email, username, tipo_acesso_usuario) VALUES
   (1, id_admin, 'Administrador',   'lunaris@email.com',       'admin', 3),
   (2, id_bea,   'Beariz Tartare',  'beastartare@gmail.com',   'bea',   1),
-  (3, id_rafa,  'Rafaela Savaris', 'rafasavaris24@gmail.com', 'rafa',  2);
+  (3, id_rafa,  'Rafaela Savaris', 'rafasavaris24@gmail.com', 'rafa',  2),
+  (4, id_visitante, 'Visitante', 'visitante@lunaris.com', 'visitante', 0);
 
   INSERT INTO Constelacao (idConstelacao, idUsuario, descricao, nome) VALUES
   (1, 1, 'Constelação visível no hemisfério norte.', 'Órion'),
@@ -64,15 +71,15 @@ BEGIN
   INSERT INTO MaterialEstudo (idMaterialEstudo, idUsuario, data_lancamento, tipo_arquivo, autor, descricao, titulo, arquivo, categoria_mat_estudo) VALUES
   (1, 1, '2026-01-01 00:00:00', 'PDF', 'Equipe Lunaris', 'Introdução à astronomia', 'Astronomia Básica', NULL, 'Artigo Científico');
 
-  INSERT INTO FavoritoMaterialUsuario VALUES (1, 2);
-  INSERT INTO FavoritoConstelacaoUsuario VALUES (2, 1);
-  INSERT INTO FavoritoCorpoCelesteUsuario VALUES (1, 2);
-  INSERT INTO FavoritoEventoUsuario VALUES (2, 1);
-  INSERT INTO FavoritoPOUsuario VALUES (1, 2);
-  INSERT INTO FavoritoUsuarioMissao VALUES (2, 1);
+  INSERT INTO FavoritoMaterialUsuario VALUES (1, 4);
+  INSERT INTO FavoritoConstelacaoUsuario VALUES (2, 4);
+  INSERT INTO FavoritoCorpoCelesteUsuario VALUES (1, 4);
+  INSERT INTO FavoritoEventoUsuario VALUES (4, 1);
+  INSERT INTO FavoritoPOUsuario VALUES (1, 4);
+  INSERT INTO FavoritoUsuarioMissao VALUES (4, 1);
   INSERT INTO MissaoCorpoCeleste VALUES (3, 1);
   INSERT INTO CorpoCelesteEvento VALUES (1, 1);
-  INSERT INTO UsuarioEventoPO (idUsuarioEventoPO, idEvento, idUsuario, idPontoObs) VALUES (1, 1, 2, 1);
+  INSERT INTO UsuarioEventoPO (idUsuarioEventoPO, idEvento, idUsuario, idPontoObs) VALUES (1, 1, 4, 1);
 
   PERFORM setval(pg_get_serial_sequence('usuario',           'idusuario'),          (SELECT MAX(idusuario)           FROM usuario));
   PERFORM setval(pg_get_serial_sequence('evento',            'idevento'),           (SELECT MAX(idevento)            FROM evento));

@@ -6,7 +6,6 @@ import {
 import fundo from "../../../assets/fundo.png";
 import { useNavigate } from "react-router-dom";
 import UserProfileCard from "../../components/shared/UserProfileCard"
-
 import {
   PieChart,
   Pie,
@@ -18,7 +17,6 @@ import {
   XAxis,
   YAxis,
   Legend,
-  CartesianGrid,
 } from "recharts";
 
 import { useStatistics } from "./statistics/useStatistics";
@@ -34,7 +32,7 @@ export default function Statistics() {
     eventosAstroCategoria,
     eventosPorPesquisador,
     dadosMetPorPesquisador,
-    eventostroCatCorpoCel,
+    statsEventosAstro,
     loading,
   } = useStatistics();
 
@@ -72,6 +70,7 @@ export default function Statistics() {
       dadosMetPorPesquisador.map((d) => d.pesquisador)
     ),
   ];
+  
 
   const tooltipProps = {
     contentStyle: {
@@ -456,20 +455,11 @@ export default function Statistics() {
                       bottom: 60,
                     }}
                   >
-                    <XAxis
-                      dataKey="ponto_observacao"
-                      interval={0}
-                      angle={-20}
-                      textAnchor="end"
-                    />
+                    <XAxis dataKey="ponto_observacao" interval={0} angle={-20} textAnchor="end"/>
 
                     <YAxis allowDecimals={false} />
 
-                    <Tooltip
-                      {...tooltipProps}
-                      cursor={false}
-                      isAnimationActive={false}
-                    />
+                    <Tooltip {...tooltipProps} cursor={false} isAnimationActive={false}/>
 
                     <Legend />
 
@@ -492,64 +482,36 @@ export default function Statistics() {
 
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-10">
             <h3 className="text-xl mb-6">
-              Eventos Astronômicos por Categoria
+              Eventos Astronômicos por  e número de Corpos Celestes relacionados
             </h3>
 
-            {eventostroCatCorpoCel.length === 0 ? (
+            {statsEventosAstro.length === 0 ? (
               <div className="h-[400px] flex items-center justify-center text-zinc-500">
                 Sem informações
               </div>
             ) : (
-              <div className="h-[450px]">
+              <div className="h-80 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
-                    data={eventostroCatCorpoCel}
-                    margin={{
-                      top: 20,
-                      right: 30,
-                      left: 20,
-                      bottom: 50,
-                    }}
+                    data={statsEventosAstro}
+                    barCategoryGap="20%"
                   >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      opacity={0.2}
-                    />
-
-                    <XAxis
-                      dataKey="categoria"
-                      angle={-20}
-                      textAnchor="end"
-                      interval={0}
-                    />
-
+                    <XAxis dataKey="categoria" />
                     <YAxis allowDecimals={false} />
-
-                    <Tooltip
-                      {...tooltipProps}
-                      cursor={false}
-                      isAnimationActive={false}
-                    />
-
+                    <Tooltip {...tooltipProps} cursor={false} isAnimationActive={false}/>
                     <Legend />
 
-                    <Bar
-                      dataKey="total_eventos"
-                      name="Eventos"
-                      fill="#8b5cf6"
-                      radius={[4, 4, 0, 0]}
-                    />
+                    <Bar dataKey="total_eventos" name="Total de Eventos" fill="#60a5fa"/>
 
                     <Bar
                       dataKey="corpos_celestes_relacionados"
                       name="Corpos Celestes"
-                      fill="#ec4899"
-                      radius={[4, 4, 0, 0]}
+                      fill="#a78bfa"
                     />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-            )}
+            )};
           </div>
         </main>
       </div>

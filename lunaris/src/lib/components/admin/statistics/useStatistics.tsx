@@ -9,7 +9,7 @@ import type {
   EventoAstroCategoria,
   EventosPorPesquisador,
   DadosMeteorologicosPorPesquisador,
-  EventoAstroCatCC,
+  StatsEventosAstro
 } from "./typesStatistics";
 
 type DashboardData = {
@@ -20,7 +20,7 @@ type DashboardData = {
   eventosAstroCategoria: EventoAstroCategoria[];
   eventosPorPesquisador: EventosPorPesquisador[];
   dadosMetPorPesquisador: DadosMeteorologicosPorPesquisador[];
-  eventostroCatCorpoCel: EventoAstroCatCC[];
+  statsEventosAstro: StatsEventosAstro[];
 };
 
 export function useStatistics() {
@@ -37,7 +37,7 @@ export function useStatistics() {
     eventosAstroCategoria: [],
     eventosPorPesquisador: [],
     dadosMetPorPesquisador: [],
-    eventostroCatCorpoCel: [],
+    statsEventosAstro: [],
   });
 
   const [loading, setLoading] = useState(true);

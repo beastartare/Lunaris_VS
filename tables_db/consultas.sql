@@ -1,36 +1,4 @@
 SELECT
-    usuario.nome AS pesquisador,
-    COUNT(DISTINCT evento.idevento) AS total_eventos
-FROM usuario
-JOIN evento
-    ON evento.idusuario = usuario.idusuario
-LEFT JOIN usuarioeventopo
-    ON usuarioeventopo.idevento = evento.idevento
-WHERE usuario.tipo_acesso_usuario = 1
-GROUP BY
-    usuario.idusuario,
-    usuario.nome
-ORDER BY total_eventos DESC;
-
-SELECT
-    eventoastronomico.categoria_evento_astro AS categoria,
-    COUNT(DISTINCT evento.idevento) AS total_eventos,
-    COUNT(DISTINCT corpocelesteevento.idcorpoceleste) AS corpos_celestes_distintos,
-    COUNT(DISTINCT evento.idusuario) AS pesquisadores_envolvidos,
-    MIN(evento.datahora) AS primeiro_evento,
-    MAX(evento.datahora) AS ultimo_evento
-FROM eventoastronomico
-JOIN evento
-    ON evento.idevento = eventoastronomico.idevento
-JOIN usuario
-    ON usuario.idusuario = evento.idusuario
-LEFT JOIN corpocelesteevento
-    ON corpocelesteevento.idevento = eventoastronomico.idevento
-WHERE usuario.tipo_acesso_usuario = 1
-GROUP BY eventoastronomico.categoria_evento_astro
-ORDER BY total_eventos DESC;
-
-SELECT
     usuario.nome AS usuario,
     COUNT(DISTINCT favoritomaterialusuario.idmaterialestudo) AS fav_materiais,
     COUNT(DISTINCT favoritoconstelacaousuario.idconstelacao) AS fav_constelacoes,
@@ -65,13 +33,30 @@ ORDER BY total_favoritos DESC
 LIMIT 10;
 
 SELECT
-    ea.categoria_evento_astro AS categoria,
-    COUNT(DISTINCT ea.idEvento) AS total_eventos,
-    COUNT(DISTINCT cce.idCorpoCeleste) AS corpos_celestes_relacionados
-FROM EventoAstronomico ea
-LEFT JOIN CorpoCelesteEvento cce
-    ON cce.idEvento = ea.idEvento
-LEFT JOIN CorpoCeleste cc
-    ON cc.idCorpoCeleste = cce.idCorpoCeleste
-GROUP BY ea.categoria_evento_astro
+    usuario.nome AS pesquisador,
+    pontoobservacao.nome AS ponto_observacao,
+    COUNT(dadometereologico.iddadometereologico) AS total_medicoes
+FROM dadometereologico
+JOIN usuario
+    ON usuario.idusuario = dadometereologico.idusuario
+JOIN pontoobservacao
+    ON pontoobservacao.idpontoobs = dadometereologico.idpontoobs
+WHERE usuario.tipo_acesso_usuario = 2
+GROUP BY
+    usuario.nome,
+    pontoobservacao.nome
+ORDER BY
+    total_medicoes DESC
+LIMIT 10;
+
+SELECT
+    eventoastronomico.categoria_evento_astro AS categoria,
+    COUNT(DISTINCT evento.idevento) AS total_eventos,
+    COUNT(DISTINCT corpocelesteevento.idcorpoceleste) AS corpos_celestes
+FROM eventoastronomico
+JOIN evento
+    ON evento.idevento = eventoastronomico.idevento
+LEFT JOIN corpocelesteevento
+    ON corpocelesteevento.idevento = eventoastronomico.idevento
+GROUP BY eventoastronomico.categoria_evento_astro
 ORDER BY total_eventos DESC;
