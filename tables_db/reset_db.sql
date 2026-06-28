@@ -1,26 +1,35 @@
-DROP TABLE IF EXISTS UsuarioEventoPO CASCADE;
+DECLARE
+  uids UUID[];
+BEGIN
+ 
+  IF EXISTS (
+    SELECT FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_name = 'usuario'
+  ) THEN
+    SELECT ARRAY(SELECT id FROM usuario WHERE id IS NOT NULL) INTO uids;
+  END IF;
 
-DROP TABLE IF EXISTS CorpoCelesteEvento CASCADE;
-DROP TABLE IF EXISTS MissaoCorpoCeleste CASCADE;
+  DROP TABLE IF EXISTS UsuarioEventoPO CASCADE;
+  DROP TABLE IF EXISTS CorpoCelesteEvento CASCADE;
+  DROP TABLE IF EXISTS MissaoCorpoCeleste CASCADE;
+  DROP TABLE IF EXISTS FavoritoUsuarioMissao CASCADE;
+  DROP TABLE IF EXISTS FavoritoPOUsuario CASCADE;
+  DROP TABLE IF EXISTS FavoritoEventoUsuario CASCADE;
+  DROP TABLE IF EXISTS FavoritoCorpoCelesteUsuario CASCADE;
+  DROP TABLE IF EXISTS FavoritoConstelacaoUsuario CASCADE;
+  DROP TABLE IF EXISTS FavoritoMaterialUsuario CASCADE;
+  DROP TABLE IF EXISTS DadoMetereologico CASCADE;
+  DROP TABLE IF EXISTS EventoAstronomico CASCADE;
+  DROP TABLE IF EXISTS EventoMetereologico CASCADE;
+  DROP TABLE IF EXISTS MaterialEstudo CASCADE;
+  DROP TABLE IF EXISTS CorpoCeleste CASCADE;
+  DROP TABLE IF EXISTS MissaoEspacial CASCADE;
+  DROP TABLE IF EXISTS PontoObservacao CASCADE;
+  DROP TABLE IF EXISTS Constelacao CASCADE;
+  DROP TABLE IF EXISTS Evento CASCADE;
+  DROP TABLE IF EXISTS Usuario CASCADE;
 
-DROP TABLE IF EXISTS FavoritoUsuarioMissao CASCADE;
-DROP TABLE IF EXISTS FavoritoPOUsuario CASCADE;
-DROP TABLE IF EXISTS FavoritoEventoUsuario CASCADE;
-DROP TABLE IF EXISTS FavoritoCorpoCelesteUsuario CASCADE;
-DROP TABLE IF EXISTS FavoritoConstelacaoUsuario CASCADE;
-DROP TABLE IF EXISTS FavoritoMaterialUsuario CASCADE;
-
-DROP TABLE IF EXISTS DadoMetereologico CASCADE;
-
-DROP TABLE IF EXISTS EventoAstronomico CASCADE;
-DROP TABLE IF EXISTS EventoMetereologico CASCADE;
-
-DROP TABLE IF EXISTS CorpoCeleste CASCADE;
-
-DROP TABLE IF EXISTS MaterialEstudo CASCADE;
-DROP TABLE IF EXISTS MissaoEspacial CASCADE;
-DROP TABLE IF EXISTS PontoObservacao CASCADE;
-DROP TABLE IF EXISTS Constelacao CASCADE;
-DROP TABLE IF EXISTS Evento CASCADE;
-
-DROP TABLE IF EXISTS Usuario CASCADE;
+  IF uids IS NOT NULL AND array_length(uids, 1) > 0 THEN
+    DELETE FROM auth.users WHERE id = ANY(uids);
+  END IF;
+END;
