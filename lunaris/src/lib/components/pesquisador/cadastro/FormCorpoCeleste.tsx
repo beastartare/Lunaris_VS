@@ -103,6 +103,8 @@ export default function FormCorpoCeleste() {
           <option value="Satélite">Satélite</option>
 
           <option value="Buraco Negro">Buraco Negro</option>
+
+          <option value="Outro">Buraco Negro</option>
         </select>
 
         <select
