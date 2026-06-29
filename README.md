@@ -1,338 +1,257 @@
-# Lunaris_VS
+# 🌙 Lunaris VS
 
-# Lunaris — Setup Windows
+Uma plataforma web integrada para centralização, gerenciamento, análise e visualização de informações astronômicas e meteorológicas.
 
-## Tecnologias utilizadas
+---
+
+## Sumário
+
+- [Sobre o Projeto](#sobre-o-projeto)
+- [Objetivos](#objetivos)
+- [Perfis de Usuário](#perfis-de-usuário)
+- [Funcionalidades](#funcionalidades)
+- [Tecnologias Utilizadas](#tecnologias-utilizadas)
+- [Estrutura do Projeto](#estrutura-do-projeto)
+- [Configuração do Ambiente](#configuração-do-ambiente)
+- [Variáveis de Ambiente](#variáveis-de-ambiente)
+- [Arquitetura](#arquitetura)
+- [Equipe](#equipe)
+- [Licença](#licença)
+
+---
+
+## Sobre o Projeto
+
+O **Lunaris VS** é uma plataforma web integrada e interativa desenvolvida para centralizar, armazenar, consultar, analisar e visualizar informações astronômicas e meteorológicas. O sistema foi projetado para atender diferentes perfis de usuários, desde entusiastas da astronomia até pesquisadores especializados, oferecendo funcionalidades específicas de acordo com o nível de acesso e as responsabilidades atribuídas a cada perfil.
+
+A plataforma fornece um ambiente organizado para o gerenciamento de dados científicos relacionados à astronomia e à meteorologia, permitindo o cadastro, a consulta e a análise de informações sobre:
+
+- Corpos celestes;
+- Constelações;
+- Eventos astronômicos;
+- Eventos meteorológicos;
+- Missões espaciais;
+- Materiais de estudo;
+- Pontos de observação;
+- Registros meteorológicos.
+
+Além disso, o sistema implementa mecanismos de controle de acesso baseados em perfis, garantindo permissões específicas para cada categoria de usuário e assegurando a padronização dos dados por meio de classificações previamente definidas.
+
+---
+
+## Objetivos
+
+O principal objetivo do Lunaris VS é:
+
+- Centralizar informações astronômicas e meteorológicas;
+- Auxiliar pesquisadores e entusiastas no gerenciamento de dados;
+- Disponibilizar ferramentas de análise e visualização estatística;
+- Registrar e analisar dados meteorológicos para observação astronômica;
+- Disponibilizar materiais de estudo especializados;
+- Permitir a personalização por meio de favoritos;
+- Integrar recursos de inteligência artificial para suporte e consulta.
+
+---
+
+## Perfis de Usuário
+
+| Nível | Perfil | Descrição |
+|---|---|---|
+| 0 | Visitante | Permissões básicas de consulta |
+| 1 | Pesquisador Astronômico | Gerenciamento de conteúdos astronômicos |
+| 2 | Pesquisador Meteorológico | Gerenciamento de dados meteorológicos |
+| 3 | Administrador | Gerenciamento completo da plataforma |
+
+---
+
+## Funcionalidades
+
+### Autenticação e Controle de Acesso
+
+- Cadastro e autenticação de usuários;
+- Controle de permissões baseado em níveis;
+- Proteção de rotas;
+- Gerenciamento de perfis.
+
+### Conteúdo Astronômico
+
+- Cadastro de corpos celestes;
+- Cadastro de constelações;
+- Cadastro de eventos astronômicos;
+- Cadastro de missões espaciais;
+- Associação entre entidades astronômicas.
+
+### Conteúdo Meteorológico
+
+- Cadastro de eventos meteorológicos;
+- Cadastro de pontos de observação;
+- Registro histórico de dados meteorológicos.
+
+### Materiais e Biblioteca
+
+- Upload de materiais digitais;
+- Organização por categorias;
+- Identificação automática do tipo de arquivo;
+- Biblioteca personalizada.
+
+### Recursos Adicionais
+
+- Sistema de favoritos;
+- Dashboard estatístico;
+- Visualização de indicadores;
+- Integração com Google Gemini.
+
+---
+
+## Tecnologias Utilizadas
+
+### Frontend
 
 - React
-- Vite
-- Tailwind CSS
+- TypeScript
+- React Router
+- CSS
+- Lucide React
+
+### Backend
+
+- Node.js
+- Express
+- Google Gemini API
+
+### Banco de Dados
+
 - Supabase
 - PostgreSQL
-- Docker
-- TypeScript
+
+### Ferramentas
+
+- Git
+- GitHub
+- Visual Studio Code
 
 ---
 
-# 1. Instalar Node.js
-
-Baixar a versão LTS:
-
-- [https://nodejs.org](https://nodejs.org)
-
-Após instalar, verificar:
-
-```bash
-node -v
-npm -v
-```
-
----
-
-# 2. Instalar Docker Desktop
-
-Baixar:
-
-- [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/)
-
-Durante a instalação:
-
-- deixar WSL2 habilitado
-- reiniciar o computador se necessário
-
-Depois abrir o Docker Desktop e esperar aparecer:
-
-```txt
-Docker Desktop is running
-```
-
-Verificar:
-
-```bash
-docker --version
-docker compose version
-```
-
----
-
-# 3. Instalar Supabase CLI
-
-## Instalar Scoop
-
-Abrir PowerShell como administrador:
-
-```powershell
-Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
-irm get.scoop.sh | iex
-```
-
----
-
-## Instalar Supabase CLI
-
-```powershell
-scoop install supabase
-```
-
----
-
-## Verificar instalação
-
-```bash
-supabase --version
-```
-
----
-
-# 4. Clonar projeto
-
-```bash
-git clone https://github.com/beastartare/Lunaris_VS.git
-```
-
-Entrar na pasta:
-
-```bash
-cd lunaris
-```
-
----
-
-# 5. Instalar dependências do projeto
-
-```bash
-npm install
-```
-
----
-
-# 6. Configurar variáveis de ambiente
-
-Criar um arquivo:
-
-## `.env`
-
-Na raiz do projeto.
-
-Conteúdo:
-
-```env
-VITE_SUPABASE_URL=http://127.0.0.1:54321
-VITE_SUPABASE_ANON_KEY=sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH
-```
-
----
-
-# 7. Inicializar Supabase local
-
-Dentro da pasta do projeto:
-
-```bash
-supabase start
-```
-
-Esse comando irá iniciar:
-
-- PostgreSQL
-- Supabase Studio
-- Auth
-- Storage
-- Realtime
-- API REST
-- GraphQL
-
----
-
-# 8. Abrir Supabase Studio
-
-Abrir no navegador:
-
-```txt
-http://127.0.0.1:54323
-```
-
----
-
-# 9. Rodar frontend
-
-```bash
-npm run dev
-```
-
----
-
-# 10. URLs importantes
-
-## Frontend
-
-```txt
-http://localhost:5173
-```
-
-## Supabase Studio
-
-```txt
-http://127.0.0.1:54323
-```
-
-## API Supabase
-
-```txt
-http://127.0.0.1:54321
-```
-
----
-
-# 11. Banco de dados no VS Code
-
-Instalar extensões:
-
-- PostgreSQL
-- SQLTools
-- SQLTools PostgreSQL Driver
-
----
-
-## Dados de conexão PostgreSQL
-
-| Campo    | Valor     |
-| -------- | --------- |
-| Host     | 127.0.0.1 |
-| Porta    | 54322     |
-| Database | postgres  |
-| Usuário  | postgres  |
-| Senha    | postgres  |
-
----
-
-# 12. Comandos úteis
-
-## Parar Supabase
-
-```bash
-supabase stop
-```
-
----
-
-## Reiniciar Supabase
-
-```bash
-supabase stop
-supabase start
-```
-
----
-
-## Resetar banco
-
-```bash
-supabase db reset
-```
-
----
-
-## Ver containers ativos
-
-```bash
-docker ps
-```
-
----
-
-## Parar todos containers Docker
-
-```bash
-docker stop $(docker ps -aq)
-```
-
----
-
-# 13. Estrutura principal do projeto
-
-```txt
-lunaris/
-├── src/
-├── public/
-├── supabase/
-├── .env
-├── .env.example
-├── package.json
-├── vite.config.ts
+## Estrutura do Projeto
+
+```text
+LUNARIS_VS
+├── lunaris
+|   ├── backend
+|   │   ├── routes
+|   │   ├── services
+|   │   └── server.js
+|   │
+|   ├── public
+|   │
+|   ├── src
+|   │   ├── assets
+|   │   ├── contexts
+|   │   ├── hooks
+|   │   ├── lib
+|   │   │   ├── components
+|   |   |   |     ├── admin
+|   |   |   |     |   └── statistics
+|   |   |   |     ├── client
+|   |   |   |     ├── pesquisador
+|   |   |   |     |   └── cadastro
+|   |   |   |     └── shared
+|   │   │   └── utils
+|   │   ├── routes
+|   │   └── services
+|   └── supabase
+├── tables_db
+|
 └── README.md
 ```
 
 ---
 
-# 14. Fluxo correto de desenvolvimento
+## Configuração do Ambiente
 
-Sempre que abrir o projeto:
+### Pré-requisitos
 
-## 1.
+- Node.js 18+
+- npm
+- Conta no Supabase
+- Chave da API Google Gemini
+
+### Clonar o repositório
 
 ```bash
-supabase start
+git clone https://github.com/beastartare/Lunaris_VS.git
+
+cd Lunaris_VS
 ```
 
-## 2.
+### Frontend
 
 ```bash
+npm install
 npm run dev
 ```
 
----
-
-# 15. Dependências principais utilizadas
-
-## Frontend
+### Backend
 
 ```bash
-npm install react-router-dom lucide-react clsx tailwind-merge axios
-```
+cd backend
 
-## Supabase
+npm install
 
-```bash
-npm install @supabase/supabase-js
+node server.js
 ```
 
 ---
 
-# 16. Caso apareça erro de porta ocupada
+## Variáveis de Ambiente
 
-Parar containers:
+### Frontend (.env)
 
-```bash
-docker stop $(docker ps -aq)
+```env
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
 ```
 
-Depois iniciar novamente:
+### Backend (.env)
 
-```bash
-supabase start
-```
-
----
-
-# 17. Caso o Supabase não inicie
-
-Limpar Docker:
-
-```bash
-docker system prune -a -f
-```
-
-Depois:
-
-```bash
-supabase start
+```env
+SUPABASE_URL=
+SUPABASE_SERVICE_KEY=
+GEMINI_API_KEY=
+PORT=3000
 ```
 
 ---
 
-# 18. Observação sobre segurança
+## Arquitetura
 
-As chaves deste projeto estão sendo usadas apenas para desenvolvimento local.
+```text
+                Frontend
+            (React + TypeScript)
+                      │
+                      ▼
+                Backend API
+             (Node.js + Express)
+                      │
+                      ▼
+                 Supabase
+         (PostgreSQL + Auth)
+                      │
+                      ▼
+             Google Gemini API
+```
 
-NÃO utilizar essas chaves em produção.
+---
 
+## Equipe
+
+Projeto desenvolvido para fins acadêmicos e de pesquisa.
+
+- Beatriz Schuelter Tartare
+- Rafaela Fernandes Savaris
+
+---
+
+## Licença
+
+Este projeto foi desenvolvido exclusivamente para fins educacionais e acadêmicos.
