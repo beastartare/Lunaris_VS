@@ -88,7 +88,7 @@ export default function FormEvento({ tipoFixo }: FormEventoProps = {}) {
           descricao,
           latitude: Number(latitude),
           longitude: Number(longitude),
-          datahora: new Date(dataHora).toISOString(),
+          datahora: dataHora ? new Date(dataHora).toISOString() : null,
           imagem: imagensArray.length > 0 ? imagensArray : null,
         })
         .select()
@@ -140,9 +140,9 @@ export default function FormEvento({ tipoFixo }: FormEventoProps = {}) {
       setDeclinacao("");
       setIdsCorposCelestes([]);
       setImagem(null);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Erro ao cadastrar evento.");
+      alert("Erro ao cadastrar evento: " + (err.message || JSON.stringify(err)));
     }
   };
 

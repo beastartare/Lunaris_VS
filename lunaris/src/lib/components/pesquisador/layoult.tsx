@@ -16,7 +16,7 @@ const menuItems = [
   { icon: Pencil, label: "Cadastro", path: "/pesquisador/cadastro" },
   {
     icon: BookOpen,
-    label: "Minha Biblioteca",
+    label: "Meus Registros (CRUD)",
     path: "/pesquisador/minha-biblioteca",
   },
 ];

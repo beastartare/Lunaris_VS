@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "../../supabase";
-import { Star } from "lucide-react";
+import { Star, Download, FileText, BookOpen } from "lucide-react";
 
 interface MaterialEstudoItem {
   idmaterialestudo: number;
@@ -176,59 +176,51 @@ export default function MaterialEstudo() {
   };
 
   const baixarArquivo = (
-    arquivoHex: string,
+    arquivo: string,
     nomeArquivo: string,
     tipoArquivo?: string | null,
   ) => {
-    if (!arquivoHex) return;
+    if (!arquivo) return;
 
-    // bytea(hex) -> string base64
-    const cleanHex = arquivoHex.startsWith("\\x")
-      ? arquivoHex.slice(2)
-      : arquivoHex;
+    try {
+      let base64: string;
 
-    let base64 = "";
+      if (arquivo.startsWith("\\x")) {
+        const cleanHex = arquivo.slice(2);
+        let binStr = "";
+        for (let i = 0; i < cleanHex.length; i += 2) {
+          binStr += String.fromCharCode(
+            parseInt(cleanHex.substring(i, i + 2), 16),
+          );
+        }
+        base64 = binStr;
+      } else {
+        base64 = arquivo.includes(",") ? arquivo.split(",")[1] : arquivo;
+      }
 
-    for (let i = 0; i < cleanHex.length; i += 2) {
-      base64 += String.fromCharCode(
-        parseInt(cleanHex.substring(i, i + 2), 16)
-      );
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+
+      const mime = getMimeType(tipoArquivo);
+      const blob = new Blob([bytes], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const extensao = tipoArquivo?.replace(".", "").toLowerCase() || "pdf";
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${nomeArquivo}.${extensao}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      console.error("Erro ao baixar arquivo:", err);
+      alert("Não foi possível baixar o arquivo.");
     }
-
-    // base64 -> bytes reais
-    const binary = atob(base64);
-
-    const bytes = new Uint8Array(binary.length);
-
-    for (let i = 0; i < binary.length; i++) {
-      bytes[i] = binary.charCodeAt(i);
-    }
-
-    const mime = getMimeType(tipoArquivo);
-
-    const blob = new Blob([bytes], {
-      type: mime,
-    });
-
-    const url = URL.createObjectURL(blob);
-
-    const extensao =
-      tipoArquivo?.replace(".", "") || "pdf";
-
-    const link = document.createElement("a");
-
-    link.href = url;
-    link.download = `${nomeArquivo}.${extensao}`;
-
-    document.body.appendChild(link);
-
-    link.click();
-
-    document.body.removeChild(link);
-
-    setTimeout(() => {
-      URL.revokeObjectURL(url);
-    }, 1000);
   };
 
   return (
@@ -273,8 +265,9 @@ export default function MaterialEstudo() {
             {materiaisVisiveis.map((material) => (
               <div
                 key={material.idmaterialestudo}
-                className="relative rounded-2xl border border-purple-700 bg-[#3b1544] p-6"
+                className="relative flex flex-col rounded-2xl border border-purple-700 bg-[#3b1544] p-6"
               >
+                {/* Favorito */}
                 <button
                   onClick={() => toggleFavorito(material.idmaterialestudo)}
                   aria-label="Favoritar"
@@ -289,43 +282,68 @@ export default function MaterialEstudo() {
                     }
                   />
                 </button>
-                <div className="mb-4">
-                  <span className="rounded-lg bg-purple-700 px-3 py-1 text-xs">
+
+                <div className="mb-4 flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-900/60 border border-purple-600">
+                    {material.tipo_arquivo?.toLowerCase().includes("pdf") ? (
+                      <FileText size={18} className="text-pink-400" />
+                    ) : (
+                      <BookOpen size={18} className="text-fuchsia-400" />
+                    )}
+                  </div>
+                  <span className="rounded-lg bg-purple-700/60 px-3 py-1 text-xs font-medium">
                     {material.tipo_arquivo || "Arquivo"}
                   </span>
                 </div>
 
-                <h2 className="text-xl font-bold">{material.titulo}</h2>
+                <h2 className="pr-8 text-xl font-bold leading-snug">
+                  {material.titulo}
+                </h2>
 
-                <p className="mt-3 text-gray-300">{material.descricao}</p>
+                <p className="mt-3 flex-1 text-sm text-gray-300">
+                  {material.descricao}
+                </p>
 
-                <div className="mt-4 space-y-2 text-sm text-gray-400">
+                <div className="mt-4 space-y-1 text-sm text-gray-400">
                   <p>Autor: {material.autor || "Não informado"}</p>
-
                   <p>
                     Publicado em:{" "}
                     {material.data_lancamento
                       ? new Date(material.data_lancamento).toLocaleDateString(
-                        "pt-BR",
-                      )
-                      : "-"}
+                          "pt-BR",
+                        )
+                      : "—"}
                   </p>
                 </div>
 
-                {material.arquivo && (
-                  <button
-                    onClick={() =>
+                {/* Botão de download — sempre visível */}
+                <button
+                  id={`btn-download-${material.idmaterialestudo}`}
+                  onClick={() => {
+                    if (material.arquivo) {
                       baixarArquivo(
-                        material.arquivo!,
+                        material.arquivo,
                         material.titulo || "arquivo",
-                        material.tipo_arquivo
-                      )
+                        material.tipo_arquivo,
+                      );
                     }
-                    className="mt-6 w-full rounded-xl bg-fuchsia-700 px-4 py-3 font-semibold hover:bg-fuchsia-600"
-                  >
-                    Baixar Material
-                  </button>
-                )}
+                  }}
+                  disabled={!material.arquivo}
+                  title={
+                    material.arquivo
+                      ? "Baixar arquivo"
+                      : "Nenhum arquivo anexado"
+                  }
+                  className={
+                    "mt-6 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 font-semibold transition-colors " +
+                    (material.arquivo
+                      ? "bg-fuchsia-700 hover:bg-fuchsia-600 text-white"
+                      : "bg-white/5 border border-white/10 text-gray-500 cursor-not-allowed")
+                  }
+                >
+                  <Download size={16} />
+                  {material.arquivo ? "Baixar Material" : "Sem arquivo"}
+                </button>
               </div>
             ))}
           </div>

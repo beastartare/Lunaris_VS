@@ -11,7 +11,7 @@ import {
 
 import fundo from "../../assets/fundo.png";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../supabase";
 
 export default function Login() {
@@ -19,6 +19,90 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mostrarSenha, setMostrarSenha] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        checkAndCreateUser(session.user);
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN" && session) {
+        checkAndCreateUser(session.user);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const checkAndCreateUser = async (user: any) => {
+    // Evita loop se for o administrador dono logando sem banco inicializado
+    if (sessionStorage.getItem("database_missing") === "true") return;
+
+    const { data: usuarios, error: usuariosError } = await supabase
+      .from("usuario")
+      .select("idusuario")
+      .limit(1);
+
+    if (usuariosError || !usuarios || usuarios.length === 0) {
+      await supabase.auth.signOut();
+      alert("O sistema não foi inicializado. Apenas o administrador pode acessar via e-mail pela primeira vez.");
+      return;
+    }
+
+    const { data: profile } = await supabase
+      .from("usuario")
+      .select("*")
+      .eq("email", user.email)
+      .single();
+
+    if (!profile) {
+      const { error: insertError } = await supabase.from("usuario").insert([
+        {
+          id: user.id,
+          nome: user.user_metadata?.full_name || user.email.split("@")[0],
+          email: user.email,
+          username: user.email.split("@")[0],
+          tipo_acesso_usuario: 0,
+        },
+      ]);
+
+      if (insertError) {
+        console.error("Erro ao criar usuário via Google:", insertError);
+        alert("Erro ao sincronizar sua conta Google.");
+        await supabase.auth.signOut();
+        return;
+      }
+      navigate("/client/dashboard");
+      return;
+    }
+
+    if (profile.tipo_acesso_usuario === 3) {
+      navigate("/admin");
+    } else if (profile.tipo_acesso_usuario === 0) {
+      navigate("/client/dashboard");
+    } else {
+      navigate("/pesquisador/dashboard");
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
+
+    if (error) {
+      alert("Erro ao iniciar login com Google: " + error.message);
+    }
+  };
 
   async function HandleLogin(e) {
   e.preventDefault();
@@ -251,14 +335,41 @@ export default function Login() {
                 <div className="flex-1 h-px bg-pink-200/15" />
               </div>
 
+              {/* Login Google */}
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                className="w-full flex items-center justify-center gap-3 rounded-2xl border border-pink-300/20 bg-white/5 text-pink-100 py-4 hover:bg-white/10 transition"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="currentColor"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="currentColor"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                  />
+                  <path
+                    fill="currentColor"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  />
+                </svg>
+                Entrar com Google
+              </button>
+
               {/* Create Account */}
               <button
                 onClick={() => navigate("/register")}
                 type="button"
-                className="w-full flex items-center justify-center gap-3 rounded-2xl border border-pink-300/20 bg-white/5 text-pink-100 py-4 hover:bg-white/10 transition"
+                className="w-full flex items-center justify-center gap-3 rounded-2xl border border-pink-300/20 bg-white/5 text-pink-100 py-4 hover:bg-white/10 transition mt-2"
               >
                 <UserPlus size={20} />
-                Criar conta
+                Criar conta com E-mail
               </button>
             </form>
 

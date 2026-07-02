@@ -67,7 +67,7 @@ export default function FormMaterialEstudo() {
         titulo,
         autor,
         descricao,
-        categoria_material: categoriaMaterial,
+        categoria_mat_estudo: categoriaMaterial,
         tipo_arquivo: tipoArquivo,
         data_lancamento: new Date().toISOString(),
         arquivo: arquivoBase64,
@@ -83,10 +83,10 @@ export default function FormMaterialEstudo() {
       setCategoriaMaterial("");
       setArquivo(null);
       setTipoArquivo("");
-    } catch (err) {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
       console.error(err);
-
-      alert("Erro ao cadastrar material.");
+      alert(`Erro ao cadastrar material: ${msg}`);
     }
   };
 
