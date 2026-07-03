@@ -58,16 +58,17 @@ export default function Login() {
     const { data: profile } = await supabase
       .from("usuario")
       .select("*")
-      .eq("email", user.email)
-      .single();
+      .eq("id", user.id)
+      .maybeSingle();
 
     if (!profile) {
+      const emailBase = user.email ?? user.id;
       const { error: insertError } = await supabase.from("usuario").insert([
         {
           id: user.id,
-          nome: user.user_metadata?.full_name || user.email.split("@")[0],
-          email: user.email,
-          username: user.email.split("@")[0],
+          nome: user.user_metadata?.full_name || user.user_metadata?.name || emailBase.split("@")[0],
+          email: user.email ?? null,
+          username: (user.user_metadata?.preferred_username || emailBase.split("@")[0]).replace(/\s+/g, "_").toLowerCase(),
           tipo_acesso_usuario: 0,
         },
       ]);
@@ -82,6 +83,7 @@ export default function Login() {
       return;
     }
 
+    // Usuário já existe — redirecionar conforme perfil
     if (profile.tipo_acesso_usuario === 3) {
       navigate("/admin");
     } else if (profile.tipo_acesso_usuario === 0) {
@@ -105,74 +107,74 @@ export default function Login() {
   };
 
   async function HandleLogin(e) {
-  e.preventDefault();
+    e.preventDefault();
 
-  const { data: usuarios, error: usuariosError } = await supabase
-    .from("usuario")
-    .select("idusuario")
-    .limit(1);
+    const { data: usuarios, error: usuariosError } = await supabase
+      .from("usuario")
+      .select("idusuario")
+      .limit(1);
 
-  if (
-    usuariosError ||
-    !usuarios ||
-    usuarios.length === 0
-  ) {
-    sessionStorage.setItem(
-      "database_missing",
-      "true"
-    );
-    const EMAIL_DONO = "lunaris@email.com";
-    const SENHA_DONO = "admin123"
+    if (
+      usuariosError ||
+      !usuarios ||
+      usuarios.length === 0
+    ) {
+      sessionStorage.setItem(
+        "database_missing",
+        "true"
+      );
+      const EMAIL_DONO = "lunaris@email.com";
+      const SENHA_DONO = "admin123"
 
-    if (email === EMAIL_DONO && password == SENHA_DONO) {
-      navigate("/admin");
+      if (email === EMAIL_DONO && password == SENHA_DONO) {
+        navigate("/admin");
+        return;
+      }
+
+      await supabase.auth.signOut();
+
+      alert(
+        "O sistema não foi inicializado. Apenas o administrador proprietário pode acessar."
+      );
+
       return;
     }
 
-    await supabase.auth.signOut();
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    alert(
-      "O sistema não foi inicializado. Apenas o administrador proprietário pode acessar."
-    );
+    if (error) {
+      alert(error.message);
+      return;
+    }
 
-    return;
-  }
+    const userEmail = data.user.email;
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+    // Fluxo normal
+    const { data: profile, error: profileError } = await supabase
+      .from("usuario")
+      .select("*")
+      .eq("email", userEmail)
+      .single();
 
-  if (error) {
-    alert(error.message);
-    return;
-  }
+    if (profileError) {
+      alert(profileError.message);
+      return;
+    }
 
-  const userEmail = data.user.email;
-
-  // Fluxo normal
-  const { data: profile, error: profileError } = await supabase
-    .from("usuario")
-    .select("*")
-    .eq("email", userEmail)
-    .single();
-
-  if (profileError) {
-    alert(profileError.message);
-    return;
-  }
-
-  if (profile.tipo_acesso_usuario === 3) {
-    navigate("/admin");
-    return;
-  }
+    if (profile.tipo_acesso_usuario === 3) {
+      navigate("/admin");
+      return;
+    }
     if (profile.tipo_acesso_usuario === 0) {
       navigate("/client/dashboard");
       return;
     }
 
     navigate("/pesquisador/dashboard");
-}
+  }
   return (
     <div
       className="min-h-screen w-full bg-cover bg-center flex items-center justify-center px-6 py-10"

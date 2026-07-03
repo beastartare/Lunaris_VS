@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../supabase";
-import { Telescope, MapPin, ChevronLeft, ChevronRight, CalendarDays, BookMarked } from "lucide-react";
+import {
+  Telescope,
+  MapPin,
+  ChevronLeft,
+  ChevronRight,
+  CalendarDays,
+  BookMarked,
+  Trash2,
+  AlertTriangle,
+  X,
+} from "lucide-react";
 
 interface Observacao {
   idusuarioeventopo: number;
@@ -18,13 +28,108 @@ interface Observacao {
     descricao: string | null;
     latitude: number;
     longitude: number;
+    idusuario?: number;
   } | null;
 }
+
+function ModalConfirmarExclusao({
+  aberto,
+  onFechar,
+  onConfirmar,
+  pontoEhProprioUsuario,
+  excluindo,
+}: {
+  aberto: boolean;
+  onFechar: () => void;
+  onConfirmar: (excluirPonto: boolean) => void;
+  pontoEhProprioUsuario: boolean;
+  excluindo: boolean;
+}) {
+  const [excluirPonto, setExcluirPonto] = useState(false);
+
+  useEffect(() => {
+    if (!aberto) setExcluirPonto(false);
+  }, [aberto]);
+
+  if (!aberto) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4">
+      <div className="relative w-full max-w-md rounded-2xl border border-red-700/40 bg-[#1e0a23] p-6 shadow-2xl">
+        <button
+          onClick={onFechar}
+          className="absolute right-4 top-4 rounded-full p-1 text-gray-400 hover:bg-white/10 hover:text-white"
+        >
+          <X size={18} />
+        </button>
+
+        <div className="flex flex-col gap-5 pt-2">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-900/50 text-red-400">
+              <AlertTriangle size={18} />
+            </div>
+            <h2 className="text-lg font-bold text-white">Remover observação</h2>
+          </div>
+
+          <p className="text-sm text-gray-400 leading-relaxed">
+            Você será removido da lista de participantes deste evento. O evento em si <strong className="text-white">não será excluído</strong>.
+          </p>
+
+          {pontoEhProprioUsuario && (
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-amber-700/30 bg-amber-900/10 p-4">
+              <input
+                type="checkbox"
+                checked={excluirPonto}
+                onChange={(e) => setExcluirPonto(e.target.checked)}
+                className="mt-0.5 h-4 w-4 accent-amber-400 cursor-pointer"
+              />
+              <div>
+                <p className="text-sm font-medium text-amber-300">
+                  Excluir meu ponto de observação
+                </p>
+                <p className="mt-0.5 text-xs text-gray-400">
+                  Este ponto de observação foi criado por você. Marcando esta opção, ele também será removido do sistema junto com seus dados meteorológicos e favoritos associados.
+                </p>
+              </div>
+            </label>
+          )}
+
+          <div className="flex gap-3 pt-1">
+            <button
+              onClick={onFechar}
+              disabled={excluindo}
+              className="flex-1 rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm text-gray-300 hover:bg-white/10 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={() => onConfirmar(excluirPonto)}
+              disabled={excluindo}
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-red-700 py-2.5 text-sm font-semibold text-white hover:bg-red-600 disabled:opacity-50 transition-colors"
+            >
+              <Trash2 size={14} />
+              {excluindo ? "Removendo..." : "Confirmar"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 export default function MinhasBibliotecaCliente() {
   const [observacoes, setObservacoes] = useState<Observacao[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
+  const [idUsuario, setIdUsuario] = useState<number | null>(null);
+
+  const [modalExcluir, setModalExcluir] = useState<{
+    aberto: boolean;
+    observacao: Observacao | null;
+    pontoEhProprioUsuario: boolean;
+  }>({ aberto: false, observacao: null, pontoEhProprioUsuario: false });
+  const [excluindo, setExcluindo] = useState(false);
 
   // Índice de imagem atual por observação
   const [imagemAtual, setImagemAtual] = useState<Record<number, number>>({});
@@ -74,6 +179,8 @@ export default function MinhasBibliotecaCliente() {
         return;
       }
 
+      setIdUsuario(usuario.idusuario);
+
       const { data, error } = await supabase
         .from("usuarioeventopo")
         .select(
@@ -92,7 +199,8 @@ export default function MinhasBibliotecaCliente() {
             nome,
             descricao,
             latitude,
-            longitude
+            longitude,
+            idusuario
           )
         `,
         )
@@ -113,6 +221,70 @@ export default function MinhasBibliotecaCliente() {
   useEffect(() => {
     buscarObservacoes();
   }, []);
+
+
+  const abrirModalExcluir = (obs: Observacao) => {
+    const pontoEhProprioUsuario =
+      obs.idpontoobs !== null &&
+      obs.pontoobservacao !== null &&
+      (obs.pontoobservacao as any).idusuario === idUsuario;
+
+    setModalExcluir({ aberto: true, observacao: obs, pontoEhProprioUsuario });
+  };
+
+  const confirmarExclusao = async (excluirPonto: boolean) => {
+    const obs = modalExcluir.observacao;
+    if (!obs) return;
+
+    setExcluindo(true);
+    try {
+      if (excluirPonto && obs.idpontoobs !== null) {
+        await supabase
+          .from("favoritopousuario")
+          .delete()
+          .eq("idpontoobs", obs.idpontoobs);
+
+        await supabase
+          .from("dadometereologico")
+          .delete()
+          .eq("idpontoobs", obs.idpontoobs);
+
+        await supabase
+          .from("usuarioeventopo")
+          .delete()
+          .eq("idpontoobs", obs.idpontoobs);
+
+        await supabase
+          .from("pontoobservacao")
+          .delete()
+          .eq("idpontoobs", obs.idpontoobs);
+      } else {
+        const { error } = await supabase
+          .from("usuarioeventopo")
+          .delete()
+          .eq("idusuarioeventopo", obs.idusuarioeventopo);
+
+        if (error) throw error;
+      }
+
+      setObservacoes((prev) =>
+        prev.filter((o) => {
+          if (excluirPonto && obs.idpontoobs !== null) {
+            return o.idpontoobs !== obs.idpontoobs;
+          }
+          return o.idusuarioeventopo !== obs.idusuarioeventopo;
+        })
+      );
+
+      setModalExcluir({ aberto: false, observacao: null, pontoEhProprioUsuario: false });
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao remover observação. Tente novamente.");
+    } finally {
+      setExcluindo(false);
+    }
+  };
+
 
   const observacoesFiltradas = observacoes.filter((obs) =>
     obs.evento?.descricao?.toLowerCase().includes(pesquisa.toLowerCase()),
@@ -300,6 +472,17 @@ export default function MinhasBibliotecaCliente() {
                         </p>
                       </div>
                     )}
+
+                    {/* Botão excluir */}
+                    <div className="mt-auto pt-2">
+                      <button
+                        onClick={() => abrirModalExcluir(obs)}
+                        className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-700/30 bg-red-900/10 py-2 text-sm text-red-400 hover:bg-red-800/20 hover:text-red-300 transition-colors"
+                      >
+                        <Trash2 size={14} />
+                        Remover da biblioteca
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -319,6 +502,15 @@ export default function MinhasBibliotecaCliente() {
           )}
         </>
       )}
+
+      {/* Modal de confirmação de exclusão */}
+      <ModalConfirmarExclusao
+        aberto={modalExcluir.aberto}
+        onFechar={() => setModalExcluir({ aberto: false, observacao: null, pontoEhProprioUsuario: false })}
+        onConfirmar={confirmarExclusao}
+        pontoEhProprioUsuario={modalExcluir.pontoEhProprioUsuario}
+        excluindo={excluindo}
+      />
     </div>
   );
 }

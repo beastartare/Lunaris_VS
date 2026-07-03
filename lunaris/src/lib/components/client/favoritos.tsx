@@ -10,6 +10,7 @@ import {
   User,
   Ruler,
   Building2,
+  Trash2,
 } from "lucide-react";
 import { supabase } from "../../supabase";
 
@@ -93,6 +94,18 @@ const STATUS_COLORS: Record<string, string> = {
   Falha: "bg-red-800 text-red-100",
 };
 
+const FAVORITO_CONFIG: Record<
+  SecaoId,
+  { tabela: string; campo: string }
+> = {
+  corposCelestes: { tabela: "favoritocorpocelesteusuario", campo: "idcorpoceleste" },
+  constelacoes: { tabela: "favoritoconstelacaousuario", campo: "idconstelacao" },
+  eventos: { tabela: "favoritoeventousuario", campo: "idevento" },
+  materiais: { tabela: "favoritomaterialusuario", campo: "idmaterialestudo" },
+  missoes: { tabela: "favoritousuariomissao", campo: "idmissaoespacial" },
+  pontos: { tabela: "favoritopousuario", campo: "idpontoobs" },
+};
+
 // ── Componente ────────────────────────────────────────────────────────────────
 
 export default function Favoritos() {
@@ -107,6 +120,7 @@ export default function Favoritos() {
     pontos: [],
   });
   const [loading, setLoading] = useState(true);
+  const [removendo, setRemovendo] = useState<string | null>(null); // "secao-id"
   const [secaoAtiva, setSecaoAtiva] = useState<SecaoId | "Todas">("Todas");
 
   const refs: Record<SecaoId, React.RefObject<HTMLDivElement>> = {
@@ -220,6 +234,67 @@ export default function Favoritos() {
     }
   };
 
+
+
+  const removerFavorito = async (
+    secao: SecaoId,
+    idItem: number,
+  ) => {
+    if (!idUsuario) return;
+    const chave = `${secao}-${idItem}`;
+    setRemovendo(chave);
+
+    try {
+      const { tabela, campo } = FAVORITO_CONFIG[secao];
+
+      const { error } = await supabase
+        .from(tabela)
+        .delete()
+        .eq(campo, idItem)
+        .eq("idusuario", idUsuario);
+
+      if (error) throw error;
+
+      setFavoritos((prev) => {
+        const novo = { ...prev };
+        switch (secao) {
+          case "corposCelestes":
+            novo.corposCelestes = prev.corposCelestes.filter(
+              (c) => c.idcorpoceleste !== idItem,
+            );
+            break;
+          case "constelacoes":
+            novo.constelacoes = prev.constelacoes.filter(
+              (c) => c.idconstelacao !== idItem,
+            );
+            break;
+          case "eventos":
+            novo.eventos = prev.eventos.filter((e) => e.idevento !== idItem);
+            break;
+          case "materiais":
+            novo.materiais = prev.materiais.filter(
+              (m) => m.idmaterialestudo !== idItem,
+            );
+            break;
+          case "missoes":
+            novo.missoes = prev.missoes.filter(
+              (m) => m.idmissaoespacial !== idItem,
+            );
+            break;
+          case "pontos":
+            novo.pontos = prev.pontos.filter((p) => p.idpontoobs !== idItem);
+            break;
+        }
+        return novo;
+      });
+    } catch (err) {
+      console.error("Erro ao remover favorito:", err);
+      alert("Não foi possível remover o favorito. Tente novamente.");
+    } finally {
+      setRemovendo(null);
+    }
+  };
+
   // ── Filtro / scroll ────────────────────────────────────────────────────────
 
   const handleFiltro = (id: SecaoId | "Todas") => {
@@ -234,11 +309,37 @@ export default function Favoritos() {
 
   // ── Sub-componentes ────────────────────────────────────────────────────────
 
-  const Card = ({ children }: { children: React.ReactNode }) => (
-    <div className="overflow-hidden rounded-2xl border border-purple-700 bg-[#3b1544] p-6">
-      {children}
-    </div>
-  );
+  const Card = ({
+    children,
+    secao,
+    idItem,
+  }: {
+    children: React.ReactNode;
+    secao: SecaoId;
+    idItem: number;
+  }) => {
+    const chave = `${secao}-${idItem}`;
+    const estaRemovendo = removendo === chave;
+
+    return (
+      <div className="relative overflow-hidden rounded-2xl border border-purple-700 bg-[#3b1544] p-6 group">
+        {/* Botão remover favorito */}
+        <button
+          onClick={() => removerFavorito(secao, idItem)}
+          disabled={estaRemovendo}
+          title="Remover dos favoritos"
+          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full border border-red-700/30 bg-red-900/10 text-red-400/60 opacity-0 group-hover:opacity-100 hover:bg-red-800/30 hover:text-red-300 disabled:opacity-30 transition-all duration-200"
+        >
+          {estaRemovendo ? (
+            <div className="h-3 w-3 animate-spin rounded-full border border-red-400 border-t-transparent" />
+          ) : (
+            <Trash2 size={13} />
+          )}
+        </button>
+        {children}
+      </div>
+    );
+  };
 
   const SectionHeader = ({
     id,
@@ -283,22 +384,21 @@ export default function Favoritos() {
       <div className="mb-10 flex items-start justify-between">
         <div>
           <h1 className="text-5xl font-semibold">Favoritos</h1>
-        
-            <p className="mt-3 text-lg text-zinc-400">
-              Tudo que você salvou em um único lugar.
-            </p>
-          </div>
+
+          <p className="mt-3 text-lg text-zinc-400">
+            Tudo que você salvou em um único lugar.
+          </p>
         </div>
+      </div>
 
       {/* FILTRO DE SEÇÕES */}
       <div className="mb-8 flex flex-wrap gap-3">
         <button
           onClick={() => handleFiltro("Todas")}
-          className={`rounded-xl px-4 py-2 font-semibold transition-colors ${
-            secaoAtiva === "Todas"
+          className={`rounded-xl px-4 py-2 font-semibold transition-colors ${secaoAtiva === "Todas"
               ? "bg-fuchsia-700"
               : "bg-[#3b1544] hover:bg-purple-800"
-          }`}
+            }`}
         >
           Todas
         </button>
@@ -307,11 +407,10 @@ export default function Favoritos() {
           <button
             key={id}
             onClick={() => handleFiltro(id)}
-            className={`flex items-center gap-2 rounded-xl px-4 py-2 font-semibold transition-colors ${
-              secaoAtiva === id
+            className={`flex items-center gap-2 rounded-xl px-4 py-2 font-semibold transition-colors ${secaoAtiva === id
                 ? "bg-fuchsia-700"
                 : "bg-[#3b1544] hover:bg-purple-800"
-            }`}
+              }`}
           >
             <Icon size={16} />
             {label}
@@ -341,7 +440,7 @@ export default function Favoritos() {
               ) : (
                 <div className="space-y-4">
                   {favoritos.corposCelestes.map((c) => (
-                    <Card key={c.idcorpoceleste}>
+                    <Card key={c.idcorpoceleste} secao="corposCelestes" idItem={c.idcorpoceleste}>
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <h3 className="text-xl font-bold">{c.nome}</h3>
                         <span className="rounded-full bg-purple-700 px-3 py-1 text-sm">
@@ -382,7 +481,7 @@ export default function Favoritos() {
               ) : (
                 <div className="space-y-4">
                   {favoritos.constelacoes.map((c) => (
-                    <Card key={c.idconstelacao}>
+                    <Card key={c.idconstelacao} secao="constelacoes" idItem={c.idconstelacao}>
                       <h3 className="text-xl font-bold">{c.nome}</h3>
                       {c.descricao && (
                         <p className="mt-2 text-gray-300">{c.descricao}</p>
@@ -409,7 +508,7 @@ export default function Favoritos() {
               ) : (
                 <div className="space-y-4">
                   {favoritos.eventos.map((e) => (
-                    <Card key={e.idevento}>
+                    <Card key={e.idevento} secao="eventos" idItem={e.idevento}>
                       <h3 className="text-xl font-bold">{e.descricao}</h3>
                       <div className="mt-3 grid gap-2 md:grid-cols-3">
                         <MetaItem
@@ -452,7 +551,7 @@ export default function Favoritos() {
               ) : (
                 <div className="space-y-4">
                   {favoritos.materiais.map((m) => (
-                    <Card key={m.idmaterialestudo}>
+                    <Card key={m.idmaterialestudo} secao="materiais" idItem={m.idmaterialestudo}>
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <h3 className="text-xl font-bold">{m.titulo}</h3>
                         {m.tipo_arquivo && (
@@ -500,14 +599,13 @@ export default function Favoritos() {
               ) : (
                 <div className="space-y-4">
                   {favoritos.missoes.map((m) => (
-                    <Card key={m.idmissaoespacial}>
+                    <Card key={m.idmissaoespacial} secao="missoes" idItem={m.idmissaoespacial}>
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <h3 className="text-xl font-bold">{m.nome}</h3>
                         <span
-                          className={`rounded-full px-3 py-1 text-sm font-semibold ${
-                            STATUS_COLORS[m.status_missao] ??
+                          className={`rounded-full px-3 py-1 text-sm font-semibold ${STATUS_COLORS[m.status_missao] ??
                             "bg-purple-700 text-purple-100"
-                          }`}
+                            }`}
                         >
                           {m.status_missao}
                         </span>
@@ -557,7 +655,7 @@ export default function Favoritos() {
               ) : (
                 <div className="space-y-4">
                   {favoritos.pontos.map((p) => (
-                    <Card key={p.idpontoobs}>
+                    <Card key={p.idpontoobs} secao="pontos" idItem={p.idpontoobs}>
                       <h3 className="text-xl font-bold">{p.nome}</h3>
                       {p.descricao && (
                         <p className="mt-2 text-gray-300">{p.descricao}</p>
