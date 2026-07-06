@@ -6,7 +6,6 @@ import type {
   UsuarioTipo,
   EventoCategoria,
   RankingFavoritos,
-  EventoAstroCategoria,
   EventosPorPesquisador,
   DadosMeteorologicosPorPesquisador,
   StatsEventosAstro
@@ -17,7 +16,6 @@ type DashboardData = {
   usuariosPorTipo: UsuarioTipo[];
   eventosCategoria: EventoCategoria[];
   rankingFavoritos: RankingFavoritos[];
-  eventosAstroCategoria: EventoAstroCategoria[];
   eventosPorPesquisador: EventosPorPesquisador[];
   dadosMetPorPesquisador: DadosMeteorologicosPorPesquisador[];
   statsEventosAstro: StatsEventosAstro[];
@@ -34,7 +32,6 @@ export function useStatistics() {
     usuariosPorTipo: [],
     eventosCategoria: [],
     rankingFavoritos: [],
-    eventosAstroCategoria: [],
     eventosPorPesquisador: [],
     dadosMetPorPesquisador: [],
     statsEventosAstro: [],

@@ -29,7 +29,6 @@ export default function Statistics() {
     usuariosPorTipo,
     eventosCategoria,
     rankingFavoritos,
-    eventosAstroCategoria,
     eventosPorPesquisador,
     dadosMetPorPesquisador,
     statsEventosAstro,
@@ -327,56 +326,6 @@ export default function Statistics() {
                       <Bar dataKey="fav_eventos"        stackId="a" fill="#3b82f6" isAnimationActive={false} />
                       <Bar dataKey="fav_pontos_obs"     stackId="a" fill="#06b6d4" isAnimationActive={false} />
                       <Bar dataKey="fav_missoes"        stackId="a" fill="#8b5cf6" radius={[0, 8, 8, 0]} isAnimationActive={false} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="h-px bg-white/10 my-12" />
-
-          <div className="mb-6">
-            <h3 className="text-xl mb-1">
-              Eventos Astronômicos por Categoria
-            </h3>
-
-            <p className="text-zinc-400 text-sm mb-6">
-              Quantidade de eventos astronômicos registrados em cada categoria.
-            </p>
-
-            {eventosAstroCategoria.length === 0 ? (
-              <div className="bg-white/5 border border-white/10 rounded-2xl h-[320px] flex items-center justify-center text-zinc-500">
-                Sem informações
-              </div>
-            ) : (
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                <div className="h-[320px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={eventosAstroCategoria}>
-                      <XAxis dataKey="categoria" tick={{ fill: "#a1a1aa", fontSize: 12 }}/>
-                      <YAxis allowDecimals={false} domain={[0, "dataMax"]} tick={{ fill: "#a1a1aa", fontSize: 12 }}/>
-
-                      <Tooltip
-                        {...tooltipProps}
-                        cursor={false}
-                        isAnimationActive={false}
-                        formatter={(value, name) => {
-                          const labels: Record<string, string> = {
-                            total_eventos: "Eventos",
-                          };
-                          const key = String(name);
-                          return [value, labels[key] ?? key];
-                        }}
-                      />
-
-                      <Bar
-                        dataKey="total_eventos"
-                        fill="#6366f1"
-                        radius={[8, 8, 0, 0]}
-                        activeBar={false}
-                        isAnimationActive={false}
-                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>

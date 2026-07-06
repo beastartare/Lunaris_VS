@@ -1,4 +1,3 @@
-
 DECLARE
   id_admin UUID;
   id_bea   UUID;
@@ -28,10 +27,10 @@ BEGIN
    extensions.crypt('123456', extensions.gen_salt('bf')),
    now(), 'authenticated', 'authenticated', now(), now(),
    '{"provider":"email","providers":["email"]}', '{}', false, '', '', '', ''),
-  (id_visitante, '00000000-0000-0000-0000-000000000000', 'visitante@lunaris.com',
-   extensions.crypt('123456', extensions.gen_salt('bf')),
-   now(), 'authenticated', 'authenticated', now(), now(),
-   '{"provider":"email","providers":["email"]}', '{}', false, '', '', '', '');
+   (id_visitante, '00000000-0000-0000-0000-000000000000', 'visitante@lunaris.com',
+  extensions.crypt('123456', extensions.gen_salt('bf')),
+  now(), 'authenticated', 'authenticated', now(), now(),
+  '{"provider":"email","providers":["email"]}', '{}', false, '', '', '', '');
 
   INSERT INTO Usuario (idUsuario, id, nome, email, username, tipo_acesso_usuario) VALUES
   (1, id_admin, 'Administrador',   'lunaris@email.com',       'admin', 3),
@@ -61,7 +60,7 @@ BEGIN
   (2, 1, 'Artemis I', 'Concluída', 'Teste não tripulado do programa Artemis', 'NASA', '2022-11-16 06:47:00');
 
   INSERT INTO Evento (idEvento, idUsuario, longitude, latitude, dataHora, descricao, imagem) VALUES
-  (1, 1, -48.5482, -27.5949, '2026-03-15 22:00:00', 'Chuva de meteoros observada', NULL),
+  (1, 2, -48.5482, -27.5949, '2026-03-15 22:00:00', 'Chuva de meteoros observada', NULL),
   (2, 2, -46.6333, -23.5505, '2026-04-10 21:00:00', 'Eclipse lunar', NULL);
 
   INSERT INTO EventoAstronomico (idEvento, categoria_evento_astro, declinacao) VALUES
@@ -72,7 +71,7 @@ BEGIN
   (1, 1, '2026-01-01 00:00:00', 'PDF', 'Equipe Lunaris', 'Introdução à astronomia', 'Astronomia Básica', NULL, 'Artigo Científico');
 
   INSERT INTO FavoritoMaterialUsuario VALUES (1, 4);
-  INSERT INTO FavoritoConstelacaoUsuario VALUES (2, 4);
+  INSERT INTO FavoritoConstelacaoUsuario VALUES (4, 2);
   INSERT INTO FavoritoCorpoCelesteUsuario VALUES (1, 4);
   INSERT INTO FavoritoEventoUsuario VALUES (4, 1);
   INSERT INTO FavoritoPOUsuario VALUES (1, 4);

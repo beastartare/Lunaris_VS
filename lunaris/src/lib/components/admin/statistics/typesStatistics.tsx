@@ -37,15 +37,6 @@ export type RankingFavoritos = {
   total_favoritos: number;
 };
 
-export type EventoAstroCategoria = {
-  categoria: string;
-  total_eventos: number;
-  corpos_celestes_distintos: number;
-  pesquisadores_envolvidos: number;
-  primeiro_evento: string | null;
-  ultimo_evento: string | null;
-};
-
 export type VariacaoTemperatura = {
   ponto_observacao: string;
   responsavel: string;

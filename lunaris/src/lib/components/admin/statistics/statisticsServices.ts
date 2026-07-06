@@ -4,7 +4,6 @@ import type {
   UsuarioTipo,
   EventoCategoria,
   RankingFavoritos,
-  EventoAstroCategoria,
   EventosPorPesquisador,
   DadosMeteorologicosPorPesquisador,
   StatsEventosAstro
@@ -67,12 +66,6 @@ export async function getRankingFavoritos(): Promise<RankingFavoritos[]> {
   return data ?? [];
 }
 
-export async function getEventosAstroCategoria(): Promise<EventoAstroCategoria[]> {
-  const { data, error } = await supabase.rpc("get_eventos_astro_categoria");
-  if (error) throw error;
-  return data ?? [];
-}
-
 export async function getEventosPorPesquisador(): Promise<EventosPorPesquisador[]> {
   const { data, error } = await supabase.rpc(
     "get_eventos_por_pesquisador"
@@ -103,7 +96,6 @@ export async function getDashboardData() {
     usuariosPorTipo,
     eventosCategoria,
     rankingFavoritos,
-    eventosAstroCategoria,
     eventosPorPesquisador,
     dadosMetPorPesquisador,
     statsEventosAstro,
@@ -113,7 +105,6 @@ export async function getDashboardData() {
     getUsuariosPorTipo(),
     getEventosCategoria(),
     getRankingFavoritos(),
-    getEventosAstroCategoria(),
     getEventosPorPesquisador(),
     getDadosMetPorPesquisador(),
     getStatsEventosAstros(),
@@ -124,7 +115,6 @@ export async function getDashboardData() {
     usuariosPorTipo,
     eventosCategoria,
     rankingFavoritos,
-    eventosAstroCategoria,
     eventosPorPesquisador,
     dadosMetPorPesquisador,
     statsEventosAstro,
