@@ -216,6 +216,14 @@ export default function MinhaBibliotecaPesquisador() {
     { idcorpoceleste: number; nome: string }[]
   >([]);
 
+  const [todasConstelacoes, setTodasConstelacoes] = useState<
+    { idconstelacao: number; nome: string }[]
+  >([]);
+
+  const [todosPontos, setTodosPontos] = useState<
+    { idpontoobs: number; nome: string }[]
+  >([]);
+
   const [pesquisa, setPesquisa] = useState("");
   const [pagina, setPagina] = useState(1);
   const porPagina = 9;
@@ -254,6 +262,18 @@ export default function MinhaBibliotecaPesquisador() {
           .select("idcorpoceleste, nome")
           .order("nome");
         if (corposData) setTodosCorpos(corposData);
+
+        const { data: constelData } = await supabase
+          .from("constelacao")
+          .select("idconstelacao, nome")
+          .order("nome");
+        if (constelData) setTodasConstelacoes(constelData);
+
+        const { data: pontosData } = await supabase
+          .from("pontoobservacao")
+          .select("idpontoobs, nome")
+          .order("nome");
+        if (pontosData) setTodosPontos(pontosData);
       } catch (err) {
         console.error(err);
         setErro("Erro ao identificar o usuário.");
@@ -483,6 +503,14 @@ export default function MinhaBibliotecaPesquisador() {
         (c: any) => c.idcorpoceleste,
       );
       formInicial.idsCorposCelestes = idsAssociados;
+      formInicial.categoria_evento_astro = item.eventoastronomico[0].categoria_evento_astro;
+      formInicial.declinacao = item.eventoastronomico[0].declinacao;
+    } else if (
+      tabela === "evento" &&
+      item.eventometereologico &&
+      item.eventometereologico.length > 0
+    ) {
+      formInicial.categoria_evento_met = item.eventometereologico[0].categoria_evento_met;
     }
 
     setFormEdicao(formInicial);
@@ -499,13 +527,13 @@ export default function MinhaBibliotecaPesquisador() {
       if (tabela === "dadometereologico") {
         idCampo = "iddadometereologico";
         dadosUpdate = {
-          temperatura: formEdicao.temperatura
-            ? Number(formEdicao.temperatura)
-            : null,
+          idpontoobs: formEdicao.idpontoobs ? Number(formEdicao.idpontoobs) : null,
+          temperatura: formEdicao.temperatura ? Number(formEdicao.temperatura) : null,
           umidade: formEdicao.umidade ? Number(formEdicao.umidade) : null,
           indiceuv: formEdicao.indiceuv ? Number(formEdicao.indiceuv) : null,
           vel_vento: formEdicao.vel_vento ? Number(formEdicao.vel_vento) : null,
           dir_vento: formEdicao.dir_vento,
+          datahora: formEdicao.datahora || null,
         };
       } else if (tabela === "missaoespacial") {
         idCampo = "idmissaoespacial";
@@ -514,6 +542,7 @@ export default function MinhaBibliotecaPesquisador() {
           status_missao: formEdicao.status_missao,
           descricao: formEdicao.descricao,
           agencia: formEdicao.agencia,
+          datalancamento: formEdicao.datalancamento || null,
         };
       } else if (tabela === "corpoceleste") {
         idCampo = "idcorpoceleste";
@@ -522,6 +551,7 @@ export default function MinhaBibliotecaPesquisador() {
           tipo_corpo_celeste: formEdicao.tipo_corpo_celeste,
           distancia: formEdicao.distancia ? Number(formEdicao.distancia) : null,
           descricao: formEdicao.descricao,
+          idconstelacao: formEdicao.idconstelacao ? Number(formEdicao.idconstelacao) : null,
         };
       } else if (tabela === "constelacao") {
         idCampo = "idconstelacao";
@@ -543,7 +573,19 @@ export default function MinhaBibliotecaPesquisador() {
           descricao: formEdicao.descricao,
           latitude: Number(formEdicao.latitude),
           longitude: Number(formEdicao.longitude),
+          datahora: formEdicao.datahora || null,
         };
+
+        if (itemEditando.eventoastronomico && itemEditando.eventoastronomico.length > 0) {
+          await supabase.from("eventoastronomico").update({
+            categoria_evento_astro: formEdicao.categoria_evento_astro,
+            declinacao: formEdicao.declinacao ? Number(formEdicao.declinacao) : null,
+          }).eq("idevento", itemEditando.idevento);
+        } else if (itemEditando.eventometereologico && itemEditando.eventometereologico.length > 0) {
+          await supabase.from("eventometereologico").update({
+            categoria_evento_met: formEdicao.categoria_evento_met,
+          }).eq("idevento", itemEditando.idevento);
+        }
 
         if (
           itemEditando.eventoastronomico &&
@@ -573,6 +615,8 @@ export default function MinhaBibliotecaPesquisador() {
           titulo: formEdicao.titulo,
           autor: formEdicao.autor,
           descricao: formEdicao.descricao,
+          categoria_mat_estudo: formEdicao.categoria_mat_estudo,
+          data_lancamento: formEdicao.data_lancamento || null,
         };
       }
 
@@ -1056,19 +1100,34 @@ export default function MinhaBibliotecaPesquisador() {
               {itemEditando?.tabela === "dadometereologico" && (
                 <>
                   <div>
-                    <label className="text-sm text-gray-400">
-                      Temperatura (°C)
-                    </label>
+                    <label className="text-sm text-gray-400">Ponto de Observação</label>
+                    <select
+                      value={formEdicao.idpontoobs || ""}
+                      onChange={(e) => setFormEdicao({ ...formEdicao, idpontoobs: e.target.value })}
+                      className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
+                    >
+                      <option value="">Selecione um ponto</option>
+                      {todosPontos.map((p) => (
+                        <option key={p.idpontoobs} value={p.idpontoobs}>{p.nome}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400">Data / Hora</label>
+                    <input
+                      type="datetime-local"
+                      value={formEdicao.datahora ? new Date(formEdicao.datahora).toISOString().slice(0,16) : ""}
+                      onChange={(e) => setFormEdicao({ ...formEdicao, datahora: e.target.value })}
+                      className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400">Temperatura (°C)</label>
                     <input
                       type="number"
                       step="0.1"
                       value={formEdicao.temperatura || ""}
-                      onChange={(e) =>
-                        setFormEdicao({
-                          ...formEdicao,
-                          temperatura: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormEdicao({ ...formEdicao, temperatura: e.target.value })}
                       className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
                     />
                   </div>
@@ -1078,12 +1137,7 @@ export default function MinhaBibliotecaPesquisador() {
                       type="number"
                       step="0.1"
                       value={formEdicao.umidade || ""}
-                      onChange={(e) =>
-                        setFormEdicao({
-                          ...formEdicao,
-                          umidade: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormEdicao({ ...formEdicao, umidade: e.target.value })}
                       className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
                     />
                   </div>
@@ -1093,45 +1147,32 @@ export default function MinhaBibliotecaPesquisador() {
                       type="number"
                       step="0.1"
                       value={formEdicao.indiceuv || ""}
-                      onChange={(e) =>
-                        setFormEdicao({
-                          ...formEdicao,
-                          indiceuv: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormEdicao({ ...formEdicao, indiceuv: e.target.value })}
                       className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
                     />
                   </div>
                   <div>
-                    <label className="text-sm text-gray-400">
-                      Vel. Vento (km/h)
-                    </label>
+                    <label className="text-sm text-gray-400">Vel. Vento (km/h)</label>
                     <input
                       type="number"
                       step="0.1"
                       value={formEdicao.vel_vento || ""}
-                      onChange={(e) =>
-                        setFormEdicao({
-                          ...formEdicao,
-                          vel_vento: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormEdicao({ ...formEdicao, vel_vento: e.target.value })}
                       className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
                     />
                   </div>
                   <div>
                     <label className="text-sm text-gray-400">Dir. Vento</label>
-                    <input
-                      type="text"
+                    <select
                       value={formEdicao.dir_vento || ""}
-                      onChange={(e) =>
-                        setFormEdicao({
-                          ...formEdicao,
-                          dir_vento: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormEdicao({ ...formEdicao, dir_vento: e.target.value })}
                       className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
-                    />
+                    >
+                      <option value="">Selecione</option>
+                      {["N","S","L","O","NE","NO","SE","SO"].map((d) => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
                   </div>
                 </>
               )}
@@ -1151,29 +1192,32 @@ export default function MinhaBibliotecaPesquisador() {
                   </div>
                   <div>
                     <label className="text-sm text-gray-400">Status</label>
-                    <input
-                      type="text"
+                    <select
                       value={formEdicao.status_missao || ""}
-                      onChange={(e) =>
-                        setFormEdicao({
-                          ...formEdicao,
-                          status_missao: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormEdicao({ ...formEdicao, status_missao: e.target.value })}
                       className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
-                    />
+                    >
+                      <option value="">Selecione</option>
+                      {["Planejada","Em andamento","Concluída","Cancelada","Falhou"].map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label className="text-sm text-gray-400">Agência</label>
                     <input
                       type="text"
                       value={formEdicao.agencia || ""}
-                      onChange={(e) =>
-                        setFormEdicao({
-                          ...formEdicao,
-                          agencia: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormEdicao({ ...formEdicao, agencia: e.target.value })}
+                      className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400">Data de Lançamento</label>
+                    <input
+                      type="date"
+                      value={formEdicao.datalancamento ? formEdicao.datalancamento.slice(0,10) : ""}
+                      onChange={(e) => setFormEdicao({ ...formEdicao, datalancamento: e.target.value })}
                       className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
                     />
                   </div>
@@ -1182,12 +1226,7 @@ export default function MinhaBibliotecaPesquisador() {
                     <textarea
                       rows={3}
                       value={formEdicao.descricao || ""}
-                      onChange={(e) =>
-                        setFormEdicao({
-                          ...formEdicao,
-                          descricao: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormEdicao({ ...formEdicao, descricao: e.target.value })}
                       className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
                     />
                   </div>
@@ -1201,42 +1240,43 @@ export default function MinhaBibliotecaPesquisador() {
                     <input
                       type="text"
                       value={formEdicao.nome || ""}
-                      onChange={(e) =>
-                        setFormEdicao({ ...formEdicao, nome: e.target.value })
-                      }
+                      onChange={(e) => setFormEdicao({ ...formEdicao, nome: e.target.value })}
                       className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
                     />
                   </div>
                   <div>
-                    <label className="text-sm text-gray-400">
-                      Tipo de Corpo Celeste
-                    </label>
-                    <input
-                      type="text"
+                    <label className="text-sm text-gray-400">Tipo de Corpo Celeste</label>
+                    <select
                       value={formEdicao.tipo_corpo_celeste || ""}
-                      onChange={(e) =>
-                        setFormEdicao({
-                          ...formEdicao,
-                          tipo_corpo_celeste: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormEdicao({ ...formEdicao, tipo_corpo_celeste: e.target.value })}
                       className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
-                    />
+                    >
+                      <option value="">Selecione</option>
+                      {["Planeta","Estrela","Galáxia","Nebulosa","Cometa","Asteroide","Satélite","Buraco Negro","Outro"].map((t) => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </select>
                   </div>
                   <div>
-                    <label className="text-sm text-gray-400">
-                      Distância (UA)
-                    </label>
+                    <label className="text-sm text-gray-400">Constelação</label>
+                    <select
+                      value={formEdicao.idconstelacao || ""}
+                      onChange={(e) => setFormEdicao({ ...formEdicao, idconstelacao: e.target.value })}
+                      className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
+                    >
+                      <option value="">Nenhuma</option>
+                      {todasConstelacoes.map((c) => (
+                        <option key={c.idconstelacao} value={c.idconstelacao}>{c.nome}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400">Distância (UA)</label>
                     <input
                       type="number"
                       step="0.000001"
                       value={formEdicao.distancia || ""}
-                      onChange={(e) =>
-                        setFormEdicao({
-                          ...formEdicao,
-                          distancia: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormEdicao({ ...formEdicao, distancia: e.target.value })}
                       className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
                     />
                   </div>
@@ -1245,12 +1285,7 @@ export default function MinhaBibliotecaPesquisador() {
                     <textarea
                       rows={3}
                       value={formEdicao.descricao || ""}
-                      onChange={(e) =>
-                        setFormEdicao({
-                          ...formEdicao,
-                          descricao: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormEdicao({ ...formEdicao, descricao: e.target.value })}
                       className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
                     />
                   </div>
@@ -1354,98 +1389,107 @@ export default function MinhaBibliotecaPesquisador() {
                     <input
                       type="text"
                       value={formEdicao.descricao || ""}
-                      onChange={(e) =>
-                        setFormEdicao({
-                          ...formEdicao,
-                          descricao: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormEdicao({ ...formEdicao, descricao: e.target.value })}
+                      className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400">Data / Hora</label>
+                    <input
+                      type="datetime-local"
+                      value={formEdicao.datahora ? new Date(formEdicao.datahora).toISOString().slice(0,16) : ""}
+                      onChange={(e) => setFormEdicao({ ...formEdicao, datahora: e.target.value })}
                       className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
                     />
                   </div>
                   <div>
                     <label className="text-sm text-gray-400">Latitude</label>
                     <input
-                      type="number"
-                      step="0.000001"
+                      type="number" step="0.000001"
                       value={formEdicao.latitude || ""}
-                      onChange={(e) =>
-                        setFormEdicao({
-                          ...formEdicao,
-                          latitude: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormEdicao({ ...formEdicao, latitude: e.target.value })}
                       className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
                     />
                   </div>
                   <div>
                     <label className="text-sm text-gray-400">Longitude</label>
                     <input
-                      type="number"
-                      step="0.000001"
+                      type="number" step="0.000001"
                       value={formEdicao.longitude || ""}
-                      onChange={(e) =>
-                        setFormEdicao({
-                          ...formEdicao,
-                          longitude: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormEdicao({ ...formEdicao, longitude: e.target.value })}
                       className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
                     />
                   </div>
 
-                  {itemEditando?.eventoastronomico &&
-                    itemEditando.eventoastronomico.length > 0 && (
+                  {itemEditando?.eventoastronomico && itemEditando.eventoastronomico.length > 0 && (
+                    <>
+                      <div>
+                        <label className="text-sm text-gray-400">Categoria Astronômica</label>
+                        <select
+                          value={formEdicao.categoria_evento_astro || ""}
+                          onChange={(e) => setFormEdicao({ ...formEdicao, categoria_evento_astro: e.target.value })}
+                          className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
+                        >
+                          <option value="">Selecione</option>
+                          {["Eclipse Solar","Eclipse Lunar","Chuva de Meteoros","Conjunção Planetária","Outro"].map((c) => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-sm text-gray-400">Declinação</label>
+                        <input
+                          type="number" step="0.000001"
+                          value={formEdicao.declinacao || ""}
+                          onChange={(e) => setFormEdicao({ ...formEdicao, declinacao: e.target.value })}
+                          className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
+                        />
+                      </div>
                       <div className="pt-2">
-                        <label className="text-sm text-gray-400 mb-2 block">
-                          Corpos Celestes Associados
-                        </label>
+                        <label className="text-sm text-gray-400 mb-2 block">Corpos Celestes Associados</label>
                         <div className="w-full rounded-xl bg-[#1a0826] border border-purple-900/50 p-3 space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
                           {todosCorpos.map((corpo) => {
-                            const isChecked =
-                              formEdicao.idsCorposCelestes?.includes(
-                                corpo.idcorpoceleste,
-                              ) || false;
+                            const isChecked = formEdicao.idsCorposCelestes?.includes(corpo.idcorpoceleste) || false;
                             return (
-                              <label
-                                key={corpo.idcorpoceleste}
-                                className="flex items-center gap-2 cursor-pointer hover:bg-white/5 p-1 rounded"
-                              >
+                              <label key={corpo.idcorpoceleste} className="flex items-center gap-2 cursor-pointer hover:bg-white/5 p-1 rounded">
                                 <input
                                   type="checkbox"
                                   checked={isChecked}
                                   onChange={() => {
-                                    const currentIds =
-                                      formEdicao.idsCorposCelestes || [];
-                                    if (isChecked) {
-                                      setFormEdicao({
-                                        ...formEdicao,
-                                        idsCorposCelestes: currentIds.filter(
-                                          (id: number) =>
-                                            id !== corpo.idcorpoceleste,
-                                        ),
-                                      });
-                                    } else {
-                                      setFormEdicao({
-                                        ...formEdicao,
-                                        idsCorposCelestes: [
-                                          ...currentIds,
-                                          corpo.idcorpoceleste,
-                                        ],
-                                      });
-                                    }
+                                    const currentIds = formEdicao.idsCorposCelestes || [];
+                                    setFormEdicao({
+                                      ...formEdicao,
+                                      idsCorposCelestes: isChecked
+                                        ? currentIds.filter((id: number) => id !== corpo.idcorpoceleste)
+                                        : [...currentIds, corpo.idcorpoceleste],
+                                    });
                                   }}
                                   className="accent-fuchsia-600"
                                 />
-                                <span className="text-zinc-300">
-                                  {corpo.nome}
-                                </span>
+                                <span className="text-zinc-300">{corpo.nome}</span>
                               </label>
                             );
                           })}
                         </div>
                       </div>
-                    )}
+                    </>
+                  )}
+
+                  {itemEditando?.eventometereologico && itemEditando.eventometereologico.length > 0 && (
+                    <div>
+                      <label className="text-sm text-gray-400">Categoria Meteorológica</label>
+                      <select
+                        value={formEdicao.categoria_evento_met || ""}
+                        onChange={(e) => setFormEdicao({ ...formEdicao, categoria_evento_met: e.target.value })}
+                        className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
+                      >
+                        <option value="">Selecione</option>
+                        {["Chuva","Tempestade","Granizo","Nevoeiro","Outro"].map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </>
               )}
 
@@ -1456,9 +1500,7 @@ export default function MinhaBibliotecaPesquisador() {
                     <input
                       type="text"
                       value={formEdicao.titulo || ""}
-                      onChange={(e) =>
-                        setFormEdicao({ ...formEdicao, titulo: e.target.value })
-                      }
+                      onChange={(e) => setFormEdicao({ ...formEdicao, titulo: e.target.value })}
                       className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
                     />
                   </div>
@@ -1467,9 +1509,7 @@ export default function MinhaBibliotecaPesquisador() {
                     <input
                       type="text"
                       value={formEdicao.autor || ""}
-                      onChange={(e) =>
-                        setFormEdicao({ ...formEdicao, autor: e.target.value })
-                      }
+                      onChange={(e) => setFormEdicao({ ...formEdicao, autor: e.target.value })}
                       className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
                     />
                   </div>
@@ -1478,12 +1518,29 @@ export default function MinhaBibliotecaPesquisador() {
                     <textarea
                       rows={4}
                       value={formEdicao.descricao || ""}
-                      onChange={(e) =>
-                        setFormEdicao({
-                          ...formEdicao,
-                          descricao: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormEdicao({ ...formEdicao, descricao: e.target.value })}
+                      className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400">Categoria</label>
+                    <select
+                      value={formEdicao.categoria_mat_estudo || ""}
+                      onChange={(e) => setFormEdicao({ ...formEdicao, categoria_mat_estudo: e.target.value })}
+                      className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
+                    >
+                      <option value="">Selecione</option>
+                      {["Artigo Científico","Livro","Apostila","Relatório","Apresentação","Vídeo Aula","Imagem","Dataset","Outro"].map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400">Data de Lançamento</label>
+                    <input
+                      type="date"
+                      value={formEdicao.data_lancamento ? formEdicao.data_lancamento.slice(0,10) : ""}
+                      onChange={(e) => setFormEdicao({ ...formEdicao, data_lancamento: e.target.value })}
                       className="w-full bg-[#1a0826] border border-purple-900/50 rounded-lg p-2 mt-1 text-white"
                     />
                   </div>
